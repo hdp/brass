@@ -1,0 +1,72 @@
+Tasks done by the maintenance scripts
+=====================================
+
+*** indicates that the task is not performed if maintenance is turned off.
+All times are US Central Time.
+
+Production environment
+======================
+
+mpa.php - runs at 0, 15, 30 and 45 minutes past every hour
+==========================================================
+
+1. *** Look for games that have timed out, and act on them.
+2. Decrement "bad login attempt" counts.
+3. Change the appearance likelihood of games in progress.
+4. Recount the number of players in games, for the front-page statistic.
+
+mpb.php - runs at 5 minutes past every odd hour (1:05am, 3:05am, ..., 11:05pm)
+==============================================================================
+
+1. *** Cancel games that are "Recruiting" and were created more than 7 days ago.
+2. Delete players' Notes in games that finished more than 7 days ago.
+3. Close threads for games that finished between 7 and 10 days ago, where the
+   thread is not set to "Forced Open".
+   --- At every call except 3:05am on Sundays.
+4. Close threads for games that finished more than 7 days ago, where the thread
+   is not set to "Forced Open".
+   --- Only at 3:05am on Sundays.
+
+mpc.php - runs at 3:35am every day
+==================================
+
+1. Delete users who registered more than 14 days ago and have not validated.
+2. *** Recalculate all player ratings, and then calculate ranks.
+3. Delete entries in RecentEventLog that are more than 14 days old.
+
+mpd.php - runs at 4:05am every day except Fridays and Sundays
+=============================================================
+
+1. Delete cancelled games that were cancelled more than 10 days ago.
+   --- Only on Mondays and Thursdays.
+2. *** Check for num-moves-made files that were last modified more than a week
+   ago, and delete them if the corresponding game has finished.
+   --- Only on Mondays and Thursdays.
+3. *** Refresh the data in table `Metadatum`.
+   --- Only on Tuesdays.
+4. *** Recalculate player non-rating statistics, and then calculate
+   completed-game ranks.
+   --- Only on Tuesdays.
+5. ANALYZE tables `Game`, `PlayerGameRcd` and `User`.
+   --- Only on Wednesdays.
+6. OPTIMIZE tables `Game`, `PlayerGameRcd`, `User` and
+   `ChosenTranslatedPhrase`.
+   --- Only on Saturdays.
+
+Test environment
+================
+
+mt.php - runs at 4:35am every day
+=================================
+
+1. *** Look for games that have timed out, and act on them.
+2. Zero "bad login attempt" counts.
+3. *** Cancel games that are "Recruiting" and were created more than 7 days
+   ago.
+4. Delete players' Notes in games that finished more than 7 days ago.
+5. Close threads for games that finished more than 7 days ago, where the
+   thread is not set to "Forced Open".
+6. Delete users who registered more than 14 days ago and have not validated.
+7. *** Check for num-moves-made files that were last modified more than a week
+   ago, and delete them if the corresponding game has finished.
+8. Delete entries in RecentEventLog that are more than 30 days old.

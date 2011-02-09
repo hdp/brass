@@ -1,0 +1,159 @@
+functions-documentation.txt
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
+function ensure_valid_ascii ($x)
+function ensure_valid_utf8 ($x)
+function sanitise_bool ($x, $flags = 0)
+function sanitise_int ($x, $flags = 0, $min = null, $max = null, $default = null)
+function sanitise_str ($x, $flags = 0)
+function sanitise_enum ($x, $possibilities, $default = null)
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
+ensure_valid_ascii() and ensure_valid_utf8() are both based on code posted to the PHP
+manual page for mb_check_encoding() by "javalc6 at gmail dot com" on 24/12/2009. Each of
+these two functions accepts a string that is assumed to be "UTF-8-like", but is not
+assumed to conform to RFC 3629 (so it is assumed that 6-byte sequences, 5-byte sequences,
+4-byte sequences corresponding to codepoints forbidden by RFC 3629, and overlong 2-byte
+sequences all might appear). Each function looks through the string and checks that it
+consists entirely of certain permitted characters. Characters that are not permitted, are
+badly-formed UTF-8, or would violate RFC 3629 are replaced with a replacement character.
+
+ensure_valid_ascii() uses a question mark, ?, as its replacement character. The characters
+it allows through are printable ASCII characters (20 through 7E inclusive), tabs (09),
+line feeds (0A) and carriage returns (0D). ensure_valid_utf8() uses the "replacement
+character" Unicode codepoint (U+FFFD) as its replacement character. The characters it
+allows through are all the same characters allowed by ensure_valid_ascii(), along with all
+2-byte and 3-byte UTF-8 sequences (except for overlong 2-byte sequences). 4-byte sequences
+are not allowed through, because MySQL's "utf8" character set does not support them.
+
+(The character set "utf8mb4" is identical to "utf8" except that it does support all 4-byte
+sequences permitted by RFC 3629; but "utf8mb4" is available only from MySQL version 5.5.3.
+To keep the application portable, I will be assuming unavailability of "utf8mb4" at the
+present time.)
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
+function dbquery ()
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
+Example: To perform the query
+
+    UPDATE `User` SET `IceCream` = 'Strawberry', `IQ` = 105 WHERE `UserID` = 1234
+
+use the following:
+
+    dbquery( DBQUERY_WRITE,
+             'UPDATE `User` SET `IceCream` = :icecream:, `IQ` = :iq: WHERE `UserID` = :userid:',
+             'icecream' , 'Strawberry' ,
+             'iq'       , 105          ,
+             'userid'   , 1234
+             );
+
+The number of arguments should be either 1 or a positive even number, i.e. the
+number of parameters should be one of 1, 2, 4, 6, 8, 10, etc. The first
+argument should be an integer. It should be used to specify precisely one of
+the following (referred to as the "query type"):
+    DBQUERY_START_TRANSACTION
+        Issue 'START TRANSACTION'. Supply no other arguments. Will return true.
+    DBQUERY_COMMIT
+        Issue 'COMMIT'. Supply no other arguments. Will return true.
+    DBQUERY_ROLLBACK
+        Issue 'ROLLBACK'. Supply no other arguments. Will return true.
+    DBQUERY_WRITE
+        Write query (INSERT, UPDATE or DELETE); return mysqli result object,
+        or 'NONE' if empty resultset (should be 'NONE' or you are doing
+        something wrong, but this is not checked within the function).
+    DBQUERY_AFFECTED_ROWS
+        Write query (UPDATE or DELETE); returns number of rows affected.
+        (Uses mysqli_affected_rows(), so if the query is a SELECT query then
+        the number of rows in the resultset is returned, although the resultset
+        itself is not.)
+    DBQUERY_INSERT_ID
+        INSERT query; return the output of mysqli_insert_id() (this is usually
+        an integer, but it will be a string if the number exceeds PHP's maximum
+        integer size).
+            (I have not investigated whether this works if the INSERT query is
+            issued inside a stored procedure. The function will halt script
+            execution if there are more resultsets to retrieve at the point it
+            expects to be able to call mysqli_insert_id(). I do not know
+            whether calling mysqli_insert_id() when there are more resultsets
+            to retrieve would in fact cause mysqli_* to throw an error.)
+    DBQUERY_READ_RESULTSET
+        SELECT query; return mysqli result object, or 'NONE' if empty resultset.
+    DBQUERY_READ_SINGLEROW
+        SELECT query, at most one row expected in resultset; return associative
+        array, or 'NONE' if empty result set (if there is more than one row in
+        the resultset then the second and subsequent rows are ignored).
+    DBQUERY_READ_INTEGER
+        SELECT query, resultset expected to be an integer scalar (e.g.
+        'SELECT COUNT(*) FROM TableName'); return integer (error out if empty
+        resultset) (if there is more than one row in the resultset then the
+        second and subsequent rows are ignored; if there is more than one
+        column in the resultset then the second and subsequent columns are
+        ignored).
+    DBQUERY_READ_INTEGER_TOLERANT_ZERO
+        As DBQUERY_READ_INTEGER but tolerates an empty result set
+        (returns integer 0 in this case).
+    DBQUERY_READ_INTEGER_TOLERANT_NONE
+        As DBQUERY_READ_INTEGER but tolerates an empty result set
+        (returns 'NONE' in this case).
+    DBQUERY_ALLPURPOSE_TOLERATE_ERRORS
+        Unlike the other query types, script execution will not be halted
+        should MySQL return an error message. Returns false if MySQL
+        returns an error message, true otherwise.
+In addition, using bitwise or, you can specify one or both of the following:
+    DBQUERY_SHOW_STATEMENT_ONLY
+        For debugging purposes. Instead of issuing the query, function echoes
+        query to the browser (HTML-escaped and wrapped in <pre>...</pre>) and
+        then halts script execution.
+    DBQUERY_DISCONNECT_AFTERWARDS
+        Function closes the database connection after carrying out the query.
+
+Query parameters may be integers, strings, Booleans (which will be changed to
+1 or 0), null, or arrays. Array parameters are supported for the purpose of
+single-column IN clauses like the following:
+
+    SELECT `UserID` FROM `User` WHERE `IceCream` IN ('Strawberry', 'Chocolate', 'Rum and Raisin')
+
+This would be achieved like this:
+
+    dbquery( DBQUERY_READ_RESULTSET,
+             'SELECT `UserID` FROM `User` WHERE `IceCream` IN :flavours:',
+             'flavours' , array( 'Strawberry'     ,
+                                 'Chocolate'      ,
+                                 'Rum and Raisin'
+                                 )
+             );
+
+At present you cannot use a multiple-column IN clause. If you pass a
+multidimensional array as a parameter, an error will result (the array elements
+must all be integers, strings, Booleans, or null). Also, since MySQL does not
+permit you to use an IN clause with an empty list of expressions, passing an
+empty array will also result in an error. If your array contains one or more
+strings, then values that are neither strings nor null will be quoted, as per
+the MySQL manual, which states "You should never mix quoted and unquoted values
+in an IN list ..."
+
+Notes:
+
+- This function does not correct magic_quotes_gpc contamination. This should be
+  done beforehand, by the appropriate input-sanitising function.
+- When testing the output of this function, note that $output == 'NONE'
+  evaluates to true if $output is integer 0. Use $output === 'NONE' instead.
+- For best results, parameter names should consist of alphanumeric characters,
+  underscores and dashes only. In particular, using : or ! in a parameter name
+  may result in unexpected behaviour. Do not include the surrounding :: in a
+  parameter name.
+- If you need to set the transaction isolation level, I suggest
+  dbquery(DBQUERY_WRITE, 'SET TRANSACTION ISOLATION LEVEL ...')
