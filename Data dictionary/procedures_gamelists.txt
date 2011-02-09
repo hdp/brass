@@ -1,0 +1,883 @@
+// Data Dictionary for Brass: Procedures: Game lists
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListGamesInProgress_Restricted_LoggedIn" (IN invarMe INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    *
+FROM
+    (
+        SELECT
+            "GameInProgress"."PlayerToMove",
+            "GameInProgress"."PlayerToMoveName",
+            "GameInProgress"."PlayerToMoveID",
+            "GameInProgress"."AbortVote",
+            "GameInProgress"."KickVote",
+            "Game"."GameID",
+            "Game"."Friendly",
+            "Game"."GameName",
+            "Game"."GTitleDeletedByAdmin",
+            "Game"."LastMove",
+            "Game"."GameCreator",
+            "Game"."OriginalPlayers",
+            "Game"."CurrentPlayers",
+            "Game"."RailPhase",
+            "Game"."Round",
+            "Game"."NumRounds",
+            "GameVersion"."ShortVersionName",
+            "GameVersionGroup"."VersionName",
+            "GameVersion"."VersionNameSuffix",
+            "GameVersion"."Creators",
+            "User"."Name" AS "GameCreatorName",
+            "PlayerGameRcd"."User"
+        FROM
+            "GameInProgress"
+            JOIN "Game" ON "GameInProgress"."Game" = "Game"."GameID"
+            JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+            JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+            JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+            LEFT JOIN "PlayerGameRcd" ON
+                "PlayerGameRcd"."User" = invarMe AND
+                "PlayerGameRcd"."CurrentOccupant" = 0 AND
+                "Game"."GameID" = "PlayerGameRcd"."Game"
+        WHERE
+            "GameInProgress"."GameRecruitingReplacement" = 0
+        ORDER BY
+            "GameInProgress"."AppearancePriority" DESC
+        LIMIT 20
+    ) AS "SubqueryA"
+ORDER BY
+    "RailPhase",
+    "Round",
+    "NumRounds" DESC,
+    "GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListGamesInProgress_Restricted_LoggedOut" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    *
+FROM
+    (
+        SELECT
+            "GameInProgress"."PlayerToMove",
+            "GameInProgress"."PlayerToMoveName",
+            "GameInProgress"."AbortVote",
+            "GameInProgress"."KickVote",
+            "Game"."GameID",
+            "Game"."Friendly",
+            "Game"."GameName",
+            "Game"."GTitleDeletedByAdmin",
+            "Game"."LastMove",
+            "Game"."GameCreator",
+            "Game"."OriginalPlayers",
+            "Game"."CurrentPlayers",
+            "Game"."RailPhase",
+            "Game"."Round",
+            "Game"."NumRounds",
+            "GameVersion"."ShortVersionName",
+            "GameVersionGroup"."VersionName",
+            "GameVersion"."VersionNameSuffix",
+            "GameVersion"."Creators",
+            "User"."Name" AS "GameCreatorName"
+        FROM
+            "GameInProgress"
+            JOIN "Game" ON "GameInProgress"."Game" = "Game"."GameID"
+            JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+            JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+            JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+        WHERE
+            "GameInProgress"."GameRecruitingReplacement" = 0
+        ORDER BY
+            "GameInProgress"."AppearancePriority" DESC
+        LIMIT 20
+    ) AS "SubqueryA"
+ORDER BY
+    "RailPhase",
+    "Round",
+    "NumRounds" DESC,
+    "GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListGamesInProgress_All" (IN invarMe INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "GameInProgress"."PlayerToMove",
+    "GameInProgress"."PlayerToMoveName",
+    "GameInProgress"."PlayerToMoveID",
+    "GameInProgress"."AbortVote",
+    "GameInProgress"."KickVote",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."LastMove",
+    "Game"."GameCreator",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "PlayerGameRcd"."User"
+FROM
+    "GameInProgress"
+    JOIN "Game" ON "GameInProgress"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "PlayerGameRcd"."CurrentOccupant" = 0 AND
+        "Game"."GameID" = "PlayerGameRcd"."Game"
+WHERE
+    "GameInProgress"."GameRecruitingReplacement" = 0
+ORDER BY
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds" DESC,
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListGamesNeedingReplacements_LoggedIn" (IN invarMe INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "GameInProgress"."PlayerToMove",
+    "GameInProgress"."AbortVote",
+    "GameInProgress"."KickVote",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."TalkRules",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "PlayerGameRcd"."User",
+    "ReplacementOffer"."Colour"
+FROM
+    "GameInProgress"
+    JOIN "Game" ON "GameInProgress"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "PlayerGameRcd"."CurrentOccupant" = 0 AND
+        "Game"."GameID" = "PlayerGameRcd"."Game"
+    LEFT JOIN "ReplacementOffer" ON
+        "Game"."GameID" = "ReplacementOffer"."Game" AND
+        "ReplacementOffer"."Colour" = "GameInProgress"."PlayerToMove"
+WHERE
+     "GameInProgress"."GameRecruitingReplacement" = 1
+ORDER BY
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds" DESC,
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListGamesNeedingReplacements_LoggedOut" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "GameInProgress"."PlayerToMove",
+    "GameInProgress"."AbortVote",
+    "GameInProgress"."KickVote",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."TalkRules",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "ReplacementOffer"."Colour"
+FROM
+    "GameInProgress"
+    JOIN "Game" ON "GameInProgress"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "ReplacementOffer" ON
+        "Game"."GameID" = "ReplacementOffer"."Game" AND
+        "ReplacementOffer"."Colour" = "GameInProgress"."PlayerToMove"
+WHERE
+     "GameInProgress"."GameRecruitingReplacement" = 1
+ORDER BY
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds" DESC,
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListGamesRecruiting_LoggedIn" (IN invarMe INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "LobbySettings"."AnyPlayerStarts",
+    "LobbySettings"."GPrivate",
+    "LobbySettings"."MinimumPlayers",
+    "LobbySettings"."MaximumPlayers",
+    "LobbySettings"."MinimumRating",
+    "LobbySettings"."MaximumRating",
+    "LobbySettings"."CreationTime",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."CurrentPlayers",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."TalkRules",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "PlayerGameRcd"."User"
+FROM
+    "LobbySettings"
+    JOIN "Game" ON "LobbySettings"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "Game"."GameID" = "PlayerGameRcd"."Game"
+WHERE
+    "Game"."GameStatus" = 'Recruiting'
+ORDER BY
+    "LobbySettings"."GPrivate",
+    "LobbySettings"."MinimumRating",
+    "LobbySettings"."MaximumRating" DESC,
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListGamesRecruiting_LoggedOut" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "LobbySettings"."AnyPlayerStarts",
+    "LobbySettings"."GPrivate",
+    "LobbySettings"."MinimumPlayers",
+    "LobbySettings"."MaximumPlayers",
+    "LobbySettings"."MinimumRating",
+    "LobbySettings"."MaximumRating",
+    "LobbySettings"."CreationTime",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."CurrentPlayers",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."TalkRules",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName"
+FROM
+    "LobbySettings"
+    JOIN "Game" ON "LobbySettings"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+WHERE
+    "Game"."GameStatus" = 'Recruiting'
+ORDER BY
+    "LobbySettings"."GPrivate",
+    "LobbySettings"."MinimumRating",
+    "LobbySettings"."MaximumRating" DESC,
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListGamesCancelled" (IN invarMe INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "LobbySettings"."AnyPlayerStarts",
+    "LobbySettings"."GPrivate",
+    "LobbySettings"."MinimumPlayers",
+    "LobbySettings"."MaximumPlayers",
+    "LobbySettings"."MinimumRating",
+    "LobbySettings"."MaximumRating",
+    "LobbySettings"."CreationTime",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."CurrentPlayers",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."TalkRules",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "PlayerGameRcd"."User"
+FROM
+    "LobbySettings"
+    JOIN "Game" ON "LobbySettings"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "Game"."GameID" = "PlayerGameRcd"."Game"
+WHERE
+    "Game"."GameStatus" = 'Cancelled'
+ORDER BY
+    "LobbySettings"."GPrivate",
+    "LobbySettings"."MinimumRating",
+    "LobbySettings"."MaximumRating" DESC,
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "ListGamesFinished_LoggedIn" ( IN invarMe INT UNSIGNED,
+                                                      IN invarStartPoint INT UNSIGNED
+                                                      )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."LastMove",
+    "Game"."GameCreator",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds",
+    "Game"."GameStatus",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "PlayerGameRcd"."User"
+FROM
+    "Game"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "Game"."GameID" = "PlayerGameRcd"."Game"
+WHERE
+    "Game"."GameIsFinished" = 1
+ORDER BY
+    "Game"."LastMove" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "ListGamesFinished_LoggedOut" (IN invarStartPoint INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."LastMove",
+    "Game"."GameCreator",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds",
+    "Game"."GameStatus",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName"
+FROM
+    "Game"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+WHERE
+    "Game"."GameIsFinished" = 1
+ORDER BY
+    "Game"."LastMove" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListUsersGamesInProgress" ( IN invarUserID INT UNSIGNED,
+                                              IN invarMe INT UNSIGNED
+                                              )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "PlayerGameRcd"."Colour" AS "UsersColour",
+    "PlayerGameRcd"."Inherited",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."LastMove",
+    "Game"."GameCreator",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds",
+    "GameInProgress"."PlayerToMove",
+    "GameInProgress"."PlayerToMoveName",
+    "GameInProgress"."PlayerToMoveID",
+    "GameInProgress"."AbortVote",
+    "GameInProgress"."KickVote",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PlayerGameRcd"
+    JOIN "Game" ON "PlayerGameRcd"."Game" = "Game"."GameID"
+    JOIN "GameInProgress" ON "Game"."GameID" = "GameInProgress"."Game"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "ParticipantRcd"."CurrentOccupant" = 0 AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PlayerGameRcd"."User" = invarUserID AND
+    "PlayerGameRcd"."CurrentOccupant" = 0 AND
+    "Game"."GameStatus" = 'In Progress'
+ORDER BY
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds" DESC,
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListUsersGamesNeedingReplacements" ( IN invarUserID INT UNSIGNED,
+                                                       IN invarMe INT UNSIGNED
+                                                       )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "PlayerGameRcd"."Colour" AS "UsersColour",
+    "PlayerGameRcd"."Inherited",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."TalkRules",
+    "GameInProgress"."PlayerToMove",
+    "GameInProgress"."AbortVote",
+    "GameInProgress"."KickVote",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User",
+    "ReplacementOffer"."Colour"
+FROM
+    "PlayerGameRcd"
+    JOIN "Game" ON "PlayerGameRcd"."Game" = "Game"."GameID"
+    JOIN "GameInProgress" ON "Game"."GameID" = "GameInProgress"."Game"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "ParticipantRcd"."CurrentOccupant" = 0 AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+    LEFT JOIN "ReplacementOffer" ON
+        "Game"."GameID" = "ReplacementOffer"."Game" AND
+        "ReplacementOffer"."Colour" = "GameInProgress"."PlayerToMove"
+WHERE
+    "PlayerGameRcd"."User" = invarUserID AND
+    "PlayerGameRcd"."CurrentOccupant" = 0 AND
+    "Game"."GameStatus" = 'Recruiting Replacement'
+ORDER BY
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds" DESC,
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListUsersGamesRecruiting" ( IN invarUserID INT UNSIGNED,
+                                              IN invarMe INT UNSIGNED
+                                              )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "PlayerGameRcd"."Colour" AS "UsersColour",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."CurrentPlayers",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."TalkRules",
+    "LobbySettings"."AnyPlayerStarts",
+    "LobbySettings"."GPrivate",
+    "LobbySettings"."MinimumPlayers",
+    "LobbySettings"."MaximumPlayers",
+    "LobbySettings"."MinimumRating",
+    "LobbySettings"."MaximumRating",
+    "LobbySettings"."CreationTime",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PlayerGameRcd"
+    JOIN "Game" ON "PlayerGameRcd"."Game" = "Game"."GameID"
+    JOIN "LobbySettings" ON "Game"."GameID" = "LobbySettings"."Game"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PlayerGameRcd"."User" = invarUserID AND
+    "Game"."GameStatus" = 'Recruiting'
+ORDER BY
+    "LobbySettings"."GPrivate",
+    "LobbySettings"."MinimumRating",
+    "LobbySettings"."MaximumRating" DESC,
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "ListUsersGamesFinished" ( IN invarUserID INT UNSIGNED,
+                                                  IN invarMe INT UNSIGNED,
+                                                  IN invarStartPoint INT UNSIGNED,
+                                                  IN invarMaxResults TINYINT UNSIGNED
+                                                  )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "PlayerGameRcd"."Colour" AS "UsersColour",
+    "PlayerGameRcd"."Inherited",
+    "PlayerGameRcd"."GameCounts",
+    "PlayerGameRcd"."GameResult",
+    "PlayerGameRcd"."NumLongTurns",
+    "Game"."GameID",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."LastMove",
+    "Game"."GameCreator",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."GameStatus",
+    "Game"."GameIsFinished",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "GameInProgress"."PlayerToMove",
+    "GameInProgress"."PlayerToMoveID",
+    "GameInProgress"."AbortVote",
+    "GameInProgress"."KickVote",
+    ROUND("PGRScore"."Score"/100, 2) AS "Score",
+    "ParticipantRcd"."CurrentOccupant",
+    "ReplacementOffer"."Colour"
+FROM
+    "PlayerGameRcd"
+    JOIN "Game" ON "PlayerGameRcd"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "GameInProgress" ON "Game"."GameID" = "GameInProgress"."Game"
+    LEFT JOIN "PGRScore" ON
+        "PlayerGameRcd"."Game" = "PGRScore"."Game" AND
+        "PlayerGameRcd"."User" = "PGRScore"."User"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+    LEFT JOIN "ReplacementOffer" ON
+        "Game"."GameID" = "ReplacementOffer"."Game" AND
+        "ReplacementOffer"."Colour" = "GameInProgress"."PlayerToMove"
+    
+WHERE
+    "PlayerGameRcd"."User" = invarUserID AND
+    "PlayerGameRcd"."GameResult" NOT IN ('Playing', 'Hide')
+ORDER BY
+    "Game"."LastMove" DESC
+LIMIT invarStartPoint, invarMaxResults
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "ListUsersGamesWatching" ( IN invarUserID INT UNSIGNED,
+                                            IN invarMe INT UNSIGNED
+                                            )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Game"."GameID",
+    "Game"."GameStatus",
+    "Game"."Friendly",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."LastMove",
+    "Game"."GameCreator",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."RailPhase",
+    "Game"."Round",
+    "Game"."NumRounds",
+    "GameVersion"."ShortVersionName",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "User"."Name" AS "GameCreatorName",
+    "GameInProgress"."PlayerToMove",
+    "GameInProgress"."PlayerToMoveName",
+    "GameInProgress"."PlayerToMoveID",
+    "GameInProgress"."AbortVote",
+    "GameInProgress"."KickVote",
+    "PlayerGameRcd"."CurrentOccupant",
+    "ReplacementOffer"."Colour"
+FROM
+    "WatchedGame"
+    JOIN "Game" ON "WatchedGame"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "GameInProgress" ON "Game"."GameID" = "GameInProgress"."Game"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "Game"."GameID" = "PlayerGameRcd"."Game"
+    LEFT JOIN "ReplacementOffer" ON
+        "Game"."GameID" = "ReplacementOffer"."Game" AND
+        "ReplacementOffer"."Colour" = "GameInProgress"."PlayerToMove"
+WHERE
+    "WatchedGame"."User" = invarUserID
+ORDER BY
+    "Game"."GameID"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "CountUsersGamesFinished" (IN invarUserID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PlayerGameRcd"
+WHERE
+    "PlayerGameRcd"."User" = invarUserID AND
+    "PlayerGameRcd"."GameResult" NOT IN ('Playing', 'Hide')
+;
+
+END>>>>>

@@ -1,0 +1,429 @@
+// Data Dictionary for Brass: Procedures: Game data
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GameGetData_Lobby_DisplayOrModify" (IN invarGameID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."GameStatus",
+    "Game"."Friendly",
+    "Game"."CurrentPlayers",
+    "Game"."PlayerExists",
+    "Game"."TalkRules",
+    "Game"."DoWhatAtB",
+    "Game"."SpecialRules",
+    "Game"."GVersion",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "GameVersion"."CanalAlwaysExists",
+    "GameVersion"."SpaceAlwaysExists",
+    "GameVersion"."CardsToRemove",
+    "GameVersion"."CardDetailArrayB",
+    "GameVersion"."ExternalLocations",
+    "GameVersion"."MinimumPlayersAllowed",
+    "LobbySettings".*,
+    "GeneralThread"."ThreadID" AS "Thread",
+    "GeneralThread"."Closed",
+    "User"."Name" AS "GameCreatorName",
+    "User"."Pronoun" AS "CreatorPronoun",
+    "User"."Email" AS "CreatorEmail",
+    "User"."EmailPrompt" AS "CreatorEmailPrompt"
+FROM
+    "Game"
+    LEFT JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    LEFT JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    LEFT JOIN "LobbySettings" ON "Game"."GameID" = "LobbySettings"."Game"
+    LEFT JOIN "GeneralThread" ON "Game"."GameID" = "GeneralThread"."ThreadID"
+    LEFT JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+WHERE
+    "Game"."GameID" = invarGameID
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GameGetData_Game_Display" (IN invarGameID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."GVersion",
+    "Game"."LastMove",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."GameStatus",
+    "Game"."Friendly",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."PlayerExists",
+    "Game"."TurnOrder",
+    "Game"."RailPhase",
+    "Game"."NumRounds",
+    "Game"."Round",
+    "Game"."Money",
+    "Game"."AmountSpent",
+    "Game"."IncomeSpace",
+    "Game"."VictoryPoints",
+    "Game"."RemainingTiles",
+    "Game"."CoalDemand",
+    "Game"."IronDemand",
+    "Game"."CottonDemand",
+    "Game"."TalkRules",
+    "Game"."GameTicker",
+    "Game"."RandomLog",
+    "Game"."ModularBoardParts",
+    "Game"."SpecialRules",
+    "Game"."EffectiveNumPlayers",
+    "Game"."DoWhatAtB",
+    "Game"."GameIsFinished",
+    "Game"."GameTickerNames",
+    HEX("Game"."LinkStatus") AS "LinkStatus",
+    HEX("Game"."SpaceStatus") AS "SpaceStatus",
+    HEX("Game"."SpaceTile") AS "SpaceTile",
+    HEX("Game"."TechLevels") AS "TechLevels",
+    HEX("Game"."SpaceCubes") AS "SpaceCubes",
+    "GameInProgress".*,
+    "GameVersion"."TopLocationCard",
+    "GameVersion"."LocationNames",
+    "GameVersion"."SpaceTowns",
+    "GameVersion"."TileIndustries",
+    "GameVersion"."CanalStarts",
+    "GameVersion"."CanalEnds",
+    "GameVersion"."RailStarts",
+    "GameVersion"."RailEnds",
+    "GameVersion"."CanalAlwaysExists",
+    "GameVersion"."CanalExistenceArray",
+    "GameVersion"."RailAlwaysExists",
+    "GameVersion"."RailExistenceArray",
+    "GameVersion"."SpaceAlwaysExists",
+    "GameVersion"."SpaceExistenceArray",
+    "GameVersion"."VirtualConnections",
+    "GameVersion"."CardDetailArray",
+    "GameVersion"."CardDetailArrayB",
+    "GameVersion"."SpaceNumbers",
+    "GameVersion"."SpaceOrdinals",
+    "GameVersion"."LocationAutoValue",
+    "GameVersion"."TileXPositionsPretty",
+    "GameVersion"."TileYPositionsPretty",
+    "GameVersion"."TileXPositionsCompact",
+    "GameVersion"."TileYPositionsCompact",
+    "GameVersion"."CanalXPositionsPretty",
+    "GameVersion"."CanalYPositionsPretty",
+    "GameVersion"."CanalXPositionsCompact",
+    "GameVersion"."CanalYPositionsCompact",
+    "GameVersion"."RailXPositionsPretty",
+    "GameVersion"."RailYPositionsPretty",
+    "GameVersion"."RailXPositionsCompact",
+    "GameVersion"."RailYPositionsCompact",
+    "GameVersion"."MinimumPlayersAllowed",
+    "GameVersion"."CurrencySymbol",
+    "GameVersionGroup"."VersionName",
+    "GameVersion"."VersionNameSuffix",
+    "GameVersion"."Creators",
+    "GeneralThread"."ThreadID" AS "Thread",
+    "GeneralThread"."Closed",
+    "GeneralThread"."NumberOfPosts",
+    "User"."Name" AS "GameCreatorName"
+FROM
+    "Game"
+    LEFT JOIN "GameInProgress" ON "Game"."GameID" = "GameInProgress"."Game"
+    LEFT JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    LEFT JOIN "GameVersionGroup" ON "GameVersion"."VersionGroup" = "GameVersionGroup"."VersionGroupID"
+    LEFT JOIN "GeneralThread" ON "Game"."GameID" = "GeneralThread"."ThreadID"
+    LEFT JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+WHERE
+    "Game"."GameID" = invarGameID
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GameGetData_Game_Modify" (IN invarGameID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Game"."GameID",
+    "Game"."GameID" AS "Thread",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."GVersion",
+    "Game"."LastMove",
+    "Game"."TimeLimitA",
+    "Game"."TimeLimitB",
+    "Game"."GameStatus",
+    "Game"."Friendly",
+    "Game"."OriginalPlayers",
+    "Game"."CurrentPlayers",
+    "Game"."PlayerExists",
+    "Game"."TurnOrder",
+    "Game"."RailPhase",
+    "Game"."NumRounds",
+    "Game"."Round",
+    "Game"."Money",
+    "Game"."AmountSpent",
+    "Game"."IncomeSpace",
+    "Game"."VictoryPoints",
+    "Game"."RemainingTiles",
+    "Game"."CoalDemand",
+    "Game"."IronDemand",
+    "Game"."CottonDemand",
+    "Game"."TalkRules",
+    "Game"."GameTicker",
+    "Game"."RandomLog",
+    "Game"."ModularBoardParts",
+    "Game"."SpecialRules",
+    "Game"."EffectiveNumPlayers",
+    "Game"."DoWhatAtB",
+    "Game"."GameIsFinished",
+    "Game"."GameTickerNames",
+    HEX("Game"."LinkStatus") AS "LinkStatus",
+    HEX("Game"."SpaceStatus") AS "SpaceStatus",
+    HEX("Game"."SpaceTile") AS "SpaceTile",
+    HEX("Game"."TechLevels") AS "TechLevels",
+    HEX("Game"."SpaceCubes") AS "SpaceCubes",
+    "GameInProgress".*,
+    "GameVersion"."TopLocationCard",
+    "GameVersion"."LocationNames",
+    "GameVersion"."SpaceTowns",
+    "GameVersion"."TileIndustries",
+    "GameVersion"."CanalStarts",
+    "GameVersion"."CanalEnds",
+    "GameVersion"."RailStarts",
+    "GameVersion"."RailEnds",
+    "GameVersion"."CanalAlwaysExists",
+    "GameVersion"."CanalExistenceArray",
+    "GameVersion"."RailAlwaysExists",
+    "GameVersion"."RailExistenceArray",
+    "GameVersion"."SpaceAlwaysExists",
+    "GameVersion"."SpaceExistenceArray",
+    "GameVersion"."VirtualConnections",
+    "GameVersion"."TileDenyStrategicBlock",
+    "GameVersion"."CardDetailArray",
+    "GameVersion"."SpaceOrdinals",
+    "GameVersion"."ExternalLocations",
+    "GameVersion"."LocationAutoValue",
+    "GameVersion"."PrimaryLocations",
+    "GameVersion"."CardsToRemove",
+    "GameVersion"."MinimumPlayersAllowed",
+    "GameVersion"."CurrencySymbol"
+FROM
+    "Game"
+    LEFT JOIN "GameInProgress" ON "Game"."GameID" = "GameInProgress"."Game"
+    LEFT JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "Game"."GameID" = invarGameID
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GameGetData_GameTicker" (IN invarGameID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Game"."GameStatus",
+    "Game"."GameTicker",
+    "Game"."GameTickerNames",
+    "Game"."RandomLog",
+    "Game"."RailPhase",
+    "GameInProgress"."TilesDrawn",
+    "GameVersion"."VersionID",
+    "GameVersion"."LocationNames",
+    "GameVersion"."SpaceNumbers",
+    "GameVersion"."SpaceOrdinals",
+    "GameVersion"."SpaceTowns",
+    "GameVersion"."CanalStarts",
+    "GameVersion"."CanalEnds",
+    "GameVersion"."RailStarts",
+    "GameVersion"."RailEnds",
+    "GameVersion"."LocationAutoValue",
+    "GameVersion"."CurrencySymbol"
+FROM
+    "Game"
+    LEFT JOIN "GameInProgress" ON "Game"."GameID" = "GameInProgress"."Game"
+    LEFT JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+
+WHERE
+    "Game"."GameID" = invarGameID
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GameGetData_CardDistribution" (IN invarGameID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Game"."GameStatus",
+    "GameInProgress"."DiscardPile",
+    "GameInProgress"."Cards",
+    "GameInProgress"."ShuffledDeck",
+    "GameVersion"."CardDetailArray",
+    "GameVersion"."LocationNames",
+    "GameVersion"."TopLocationCard"
+FROM
+    "Game"
+    LEFT JOIN "GameInProgress" ON "Game"."GameID" = "GameInProgress"."Game"
+    LEFT JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "Game"."GameID" = invarGameID
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GameGetData_User_Display" (IN invarGameID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "PlayerGameRcd"."Colour",
+    "PlayerGameNotes"."Notes",
+    "User"."UserID",
+    "User"."Name",
+    "User"."Pronoun"
+FROM
+    "PlayerGameRcd"
+    LEFT JOIN "PlayerGameNotes" ON "PlayerGameRcd"."Game" = "PlayerGameNotes"."Game" AND
+                                   "PlayerGameRcd"."User" = "PlayerGameNotes"."User"
+    LEFT JOIN "User" ON "PlayerGameRcd"."User" = "User"."UserID"
+WHERE
+    "PlayerGameRcd"."Game" = invarGameID AND
+    "PlayerGameRcd"."CurrentOccupant" = 0
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GameGetData_User_Modify" (IN invarGameID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "PlayerGameRcd"."Colour",
+    "User"."UserID",
+    "User"."Name",
+    "User"."Pronoun",
+    "User"."Email",
+    "User"."EmailPrompt",
+    "User"."EmailPromptAgain",
+    "User"."EmailAtEnd",
+    "User"."HasBeenEmailed",
+    "User"."AutoSort",
+    "User"."Rating"
+FROM
+    "PlayerGameRcd"
+    LEFT JOIN "User" ON "PlayerGameRcd"."User" = "User"."UserID"
+WHERE
+    "PlayerGameRcd"."Game" = invarGameID AND
+    "PlayerGameRcd"."CurrentOccupant" = 0
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GameGetData_GetReplacements" (IN invarGameID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "ReplacementOffer"."User",
+    "ReplacementOffer"."ToCount",
+    "ReplacementOffer"."Colour",
+    "User"."Name",
+    "User"."Rating"
+FROM
+    "ReplacementOffer"
+    JOIN "User" ON "ReplacementOffer"."User" = "User"."UserID"
+WHERE
+    "ReplacementOffer"."Game" = invarGameID
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GameGetData_GetReplacements_Colour" ( IN invarGameID INT UNSIGNED,
+                                                        IN invarColour TINYINT
+                                                        )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "User"
+FROM
+    "ReplacementOffer"
+WHERE
+    "Game" = invarGameID AND
+    "Colour" = invarColour
+;
+
+END>>>>>

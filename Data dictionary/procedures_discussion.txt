@@ -1,0 +1,146 @@
+// Data Dictionary for Brass: Procedures: Discussion
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Discussion_ListBoards" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Board"."BoardID",
+    "Board"."BName",
+    "Board"."AdminOnly",
+    "Board"."LastPost",
+    "Board"."NumThreads",
+    "Board"."NumMessages",
+    "NonGameThread"."Thread",
+    "NonGameThread"."Title",
+    "User"."UserID",
+    "User"."Name"
+FROM
+    "Board"
+    LEFT JOIN "NonGameThread" ON "Board"."LastThread" = "NonGameThread"."Thread"
+    LEFT JOIN "User" ON "Board"."LastPoster" = "User"."UserID"
+ORDER BY
+    "Board"."OrderingNumber"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Discussion_ListThreads" ( IN invarBoardID SMALLINT UNSIGNED,
+                                                  IN invarStartPoint INT UNSIGNED
+                                                  )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+SQL_CALC_FOUND_ROWS
+    "GeneralThread"."ThreadID",
+    "GeneralThread"."Closed",
+    "GeneralThread"."NumberOfPosts",
+    "NonGameThread"."LastPost",
+    "NonGameThread"."OriginalPoster",
+    "NonGameThread"."LastPoster",
+    "NonGameThread"."Sticky",
+    "NonGameThread"."Title",
+    "NonGameThread"."TitleDeletedByAdmin",
+    "User"."UserID",
+    "User"."Name",
+    "LastPoster"."UserID" AS "LastPosterUserID",
+    "LastPoster"."Name" AS "LastPosterName"
+FROM
+    "NonGameThread"
+    LEFT JOIN "GeneralThread" ON "NonGameThread"."Thread" = "GeneralThread"."ThreadID"
+    LEFT JOIN "User" ON "Thread"."OriginalPoster" = "User"."UserID"
+    LEFT JOIN "User" AS "LastPoster" ON "Thread"."LastPoster" = "LastPoster"."UserID"
+WHERE
+    "NonGameThread"."Board" = invarBoardID
+ORDER BY
+    "NonGameThread"."Sticky" DESC,
+    "NonGameThread"."LastPost" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Discussion_ListMessages" (IN invarThreadID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Message"."MessageID",
+    "Message"."PostDate",
+    "Message"."User",
+    "Message"."MessageText",
+    "Message"."DeletedByUser",
+    "Message"."DeletedByAdmin",
+    "User"."Name",
+    "User"."Administrator",
+    "User"."Banned",
+    "User"."Translator",
+    "User"."Badge"
+FROM
+    "Message"
+    LEFT JOIN "User" ON "Message"."User" = "User"."UserID"
+WHERE
+    "Message"."Thread" = invarThreadID
+ORDER BY
+    "Message"."PostDate"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Discussion_ListMessages_Reverse" (IN invarThreadID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Message"."MessageID",
+    "Message"."PostDate",
+    "Message"."User",
+    "Message"."MessageText",
+    "Message"."DeletedByUser",
+    "Message"."DeletedByAdmin",
+    "User"."Name",
+    "User"."Administrator",
+    "User"."Banned",
+    "User"."Translator",
+    "User"."Badge"
+FROM
+    "Message"
+    LEFT JOIN "User" ON "Message"."User" = "User"."UserID"
+WHERE
+    "Message"."Thread" = invarThreadID
+ORDER BY
+    "Message"."PostDate" DESC
+;
+
+END>>>>>

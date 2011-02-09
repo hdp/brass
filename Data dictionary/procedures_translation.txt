@@ -1,0 +1,201 @@
+// Data Dictionary for Brass: Procedures: Translation synchronisation
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "GetTranslationStatistics" (IN invarLanguageID TINYINT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "TranslationModule"."ModuleID",
+    "TranslationModule"."ModuleName",
+    "TranslationModule"."ModuleDescription",
+    CASE
+        WHEN "SubqueryB"."NumPhrases" IS NULL THEN 0
+        ELSE "SubqueryB"."NumPhrases"
+    END AS "NumPhrases",
+    CASE
+        WHEN "SubqueryB"."NumUntranslatedPhrases" IS NULL THEN 0
+        ELSE "SubqueryB"."NumUntranslatedPhrases"
+    END AS "NumUntranslatedPhrases",
+    CASE
+        WHEN "SubqueryB"."SumChosen" IS NULL THEN 0
+        ELSE "SubqueryB"."SumChosen"
+    END AS "NumUnchosenPhrases",
+    CASE
+        WHEN "SubqueryB"."NumTranslatedButNotChosen" IS NULL THEN 0
+        ELSE "SubqueryB"."NumTranslatedButNotChosen"
+    END AS "NumTranslatedButNotChosen"
+FROM
+    "TranslationModule"
+    LEFT JOIN (
+        SELECT
+            "Phrase"."Module",
+            COUNT(*) AS "NumPhrases",
+            SUM(
+                CASE
+                    WHEN "SubqueryA"."NumTranslations" IS NULL THEN 1
+                    WHEN "SubqueryA"."NumTranslations" = 0 THEN 1
+                    ELSE 0
+                END
+            ) AS "NumUntranslatedPhrases",
+            SUM(
+                CASE
+                    WHEN "SubqueryA"."SumChosen" IS NULL THEN 1
+                    WHEN "SubqueryA"."SumChosen" = 0 THEN 1
+                    ELSE 0
+                END
+            ) AS "SumChosen",
+            SUM(
+                CASE
+                    WHEN
+                        "SubqueryA"."NumTranslations" > 0 AND
+                        "SubqueryA"."SumChosen" = 0
+                    THEN 1
+                    ELSE 0
+                END
+            ) AS "NumTranslatedButNotChosen"
+        FROM
+            "Phrase"
+            LEFT JOIN (
+                SELECT
+                    "PhraseName",
+                    COUNT(*) AS "NumTranslations",
+                    SUM("Chosen") AS "SumChosen"
+                FROM
+                    "TranslatedPhrase"
+                WHERE
+                    "Language" = invarLanguageID
+                GROUP BY
+                    "PhraseName"
+            ) AS "SubqueryA" ON "Phrase"."PhraseName" = "SubqueryA"."PhraseName"
+        WHERE
+            "Phrase"."CurrentlyInUse" = 1
+        GROUP BY
+            "Phrase"."Module"
+    ) AS "SubqueryB" ON "TranslationModule"."ModuleID" = "SubqueryB"."Module"
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "RenumberPhrases" ( IN invarModuleID INT UNSIGNED,
+                                     IN invarIncrement TINYINT UNSIGNED
+                                     )
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DECLARE varFinished TINYINT DEFAULT 0;
+DECLARE varPhraseName VARCHAR(16) CHARACTER SET ascii;
+DECLARE varCurrentOrderingNumber INT UNSIGNED DEFAULT 0;
+
+DECLARE Cur CURSOR FOR
+    SELECT "PhraseName"
+    FROM "Phrase"
+    WHERE "Module" = invarModuleID
+    ORDER BY "CurrentlyInUse", "OrderingNumber"
+;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET varFinished = 1;
+
+IF invarIncrement >= 5 AND invarIncrement <= 20 THEN
+    OPEN Cur;
+    REPEAT
+        FETCH Cur INTO varPhraseName;
+        SET varCurrentOrderingNumber =
+                LEAST(varCurrentOrderingNumber + invarIncrement, 65535);
+        IF varFinished = 0 THEN
+            UPDATE "Phrase"
+            SET "OrderingNumber" = varCurrentOrderingNumber
+            WHERE "PhraseName" = varPhraseName;
+        END IF;
+    UNTIL varFinished = 1 END REPEAT;
+    CLOSE Cur;
+END IF;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "RenumberAllPhrases" (IN invarIncrement TINYINT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DECLARE varFinished TINYINT DEFAULT 0;
+DECLARE varPhraseName VARCHAR(16) CHARACTER SET ascii;
+DECLARE varCurrentOrderingNumber INT UNSIGNED;
+DECLARE varOldModuleID TINYINT UNSIGNED;
+DECLARE varCurrentModuleID TINYINT UNSIGNED;
+
+DECLARE Cur CURSOR FOR
+    SELECT "PhraseName", "Module"
+    FROM "Phrase"
+    ORDER BY "Module", "CurrentlyInUse", "OrderingNumber"
+;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET varFinished = 1;
+
+IF invarIncrement >= 5 AND invarIncrement <= 20 THEN
+    OPEN Cur;
+    REPEAT
+        FETCH Cur INTO varPhraseName, varCurrentModuleID;
+        IF varFinished = 0 THEN
+            IF varCurrentModuleID = varOldModuleID THEN
+                SET varCurrentOrderingNumber =
+                        LEAST(varCurrentOrderingNumber + invarIncrement, 65535);
+            ELSE
+                SET varCurrentOrderingNumber = invarIncrement;
+                SET varOldModuleID = varCurrentModuleID;
+            END IF;
+            UPDATE "Phrase"
+            SET "OrderingNumber" = varCurrentOrderingNumber
+            WHERE "PhraseName" = varPhraseName;
+        END IF;
+    UNTIL varFinished = 1 END REPEAT;
+    CLOSE Cur;
+END IF;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "SynchroniseTranslations" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DELETE FROM "orderoft_BrassT"."TranslationLanguage";
+DELETE FROM "orderoft_BrassT"."TranslationModule";
+
+INSERT INTO
+    "orderoft_BrassT"."TranslationLanguage"
+    SELECT * FROM "orderoft_Brass"."TranslationLanguage";
+INSERT INTO
+    "orderoft_BrassT"."TranslationModule"
+    SELECT * FROM "orderoft_Brass"."TranslationModule";
+INSERT INTO
+    "orderoft_BrassT"."Phrase"
+    SELECT * FROM "orderoft_Brass"."Phrase";
+INSERT INTO
+    "orderoft_BrassT"."ChosenTranslatedPhrase"
+    SELECT * FROM "orderoft_Brass"."ChosenTranslatedPhrase";
+
+END>>>>>

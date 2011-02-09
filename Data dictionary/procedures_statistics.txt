@@ -1,0 +1,1696 @@
+// Data Dictionary for Brass: Procedures: Statistics
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_ProlificPlayers" (IN invarStartPoint INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+SQL_CALC_FOUND_ROWS
+    "UserID",
+    "Name",
+    "NumGamesCompleted",
+    "RankGamesCompleted",
+    "RankGamesCompletedTie"
+FROM
+    "User"
+WHERE
+    "UserValidated" = 1
+ORDER BY
+    "NumGamesCompleted" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_Ratings" (IN invarStartPoint INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+SQL_CALC_FOUND_ROWS
+    "UserID",
+    "Name",
+    "Rating",
+    "RankRating",
+    "RankRatingTie"
+FROM
+    "User"
+WHERE
+    "UserValidated" = 1
+ORDER BY
+    "Rating" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_AA_LoggedIn" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                            IN invarVersionGroup INT UNSIGNED,
+                                            IN invarMe INT UNSIGNED
+                                            )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "User"."Name",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+     STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+     STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+     STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+     LEFT JOIN "PlayerGameRcd" ON
+         "PlayerGameRcd"."User" = invarMe AND
+         "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_AD_LoggedIn" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                            IN invarVersionGroup INT UNSIGNED,
+                                            IN invarMe INT UNSIGNED
+                                            )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "User"."Name",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+     STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+     STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+     STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+     LEFT JOIN "PlayerGameRcd" ON
+         "PlayerGameRcd"."User" = invarMe AND
+         "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_AL_LoggedIn" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                            IN invarVersionGroup INT UNSIGNED,
+                                            IN invarMe INT UNSIGNED
+                                            )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "User"."Name",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+     STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+     STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+     STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+     LEFT JOIN "PlayerGameRcd" ON
+         "PlayerGameRcd"."User" = invarMe AND
+         "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_CA_LoggedIn" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                            IN invarVersionGroup INT UNSIGNED,
+                                            IN invarMe INT UNSIGNED
+                                            )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "User"."Name",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+     STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+     STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+     STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+     LEFT JOIN "PlayerGameRcd" ON
+         "PlayerGameRcd"."User" = invarMe AND
+         "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_CD_LoggedIn" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                            IN invarVersionGroup INT UNSIGNED,
+                                            IN invarMe INT UNSIGNED
+                                            )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "User"."Name",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+     STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+     STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+     STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+     LEFT JOIN "PlayerGameRcd" ON
+         "PlayerGameRcd"."User" = invarMe AND
+         "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_CL_LoggedIn" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                            IN invarVersionGroup INT UNSIGNED,
+                                            IN invarMe INT UNSIGNED
+                                            )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "User"."Name",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+     STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+     STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+     STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+     LEFT JOIN "PlayerGameRcd" ON
+         "PlayerGameRcd"."User" = invarMe AND
+         "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_AA_LoggedOut" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                             IN invarVersionGroup INT UNSIGNED
+                                             )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "User"."Name"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+WHERE
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_AD_LoggedOut" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                             IN invarVersionGroup INT UNSIGNED
+                                             )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "User"."Name"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+WHERE
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_AL_LoggedOut" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                             IN invarVersionGroup INT UNSIGNED
+                                             )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "User"."Name"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+WHERE
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_CA_LoggedOut" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                             IN invarVersionGroup INT UNSIGNED
+                                             )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "User"."Name"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+WHERE
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_CD_LoggedOut" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                             IN invarVersionGroup INT UNSIGNED
+                                             )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "User"."Name"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+WHERE
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTs_CL_LoggedOut" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                             IN invarVersionGroup INT UNSIGNED
+                                             )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "User"."Name"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+WHERE
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTsp_AA" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED,
+                                    IN invarMe INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTsp_AD" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED,
+                                    IN invarMe INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTsp_AL" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED,
+                                    IN invarMe INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTsp_CA" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED,
+                                    IN invarMe INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTsp_CD" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED,
+                                    IN invarMe INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTsp_CL" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED,
+                                    IN invarMe INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "PlayerGameRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    LEFT JOIN "PlayerGameRcd" ON
+        "PlayerGameRcd"."User" = invarMe AND
+        "PGRScore"."Game" = "PlayerGameRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT 50
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HST_AA" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                        IN invarVersionGroup INT UNSIGNED,
+                                        IN invarMe INT UNSIGNED,
+                                        IN invarStartPoint INT UNSIGNED
+                                        )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name",
+    "GC"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+    STRAIGHT_JOIN "User" AS "GC" ON "Game"."GameCreator" = "GC"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HST_AD" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                        IN invarVersionGroup INT UNSIGNED,
+                                        IN invarMe INT UNSIGNED,
+                                        IN invarStartPoint INT UNSIGNED
+                                        )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name",
+    "GC"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+    STRAIGHT_JOIN "User" AS "GC" ON "Game"."GameCreator" = "GC"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HST_AL" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                        IN invarVersionGroup INT UNSIGNED,
+                                        IN invarMe INT UNSIGNED,
+                                        IN invarStartPoint INT UNSIGNED
+                                        )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name",
+    "GC"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+    STRAIGHT_JOIN "User" AS "GC" ON "Game"."GameCreator" = "GC"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HST_CA" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                        IN invarVersionGroup INT UNSIGNED,
+                                        IN invarMe INT UNSIGNED,
+                                        IN invarStartPoint INT UNSIGNED
+                                        )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name",
+    "GC"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+    STRAIGHT_JOIN "User" AS "GC" ON "Game"."GameCreator" = "GC"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HST_CD" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                        IN invarVersionGroup INT UNSIGNED,
+                                        IN invarMe INT UNSIGNED,
+                                        IN invarStartPoint INT UNSIGNED
+                                        )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name",
+    "GC"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+    STRAIGHT_JOIN "User" AS "GC" ON "Game"."GameCreator" = "GC"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HST_CL" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                        IN invarVersionGroup INT UNSIGNED,
+                                        IN invarMe INT UNSIGNED,
+                                        IN invarStartPoint INT UNSIGNED
+                                        )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "PGRScore"."User" AS "Owner",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name",
+    "GC"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    STRAIGHT_JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    STRAIGHT_JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    STRAIGHT_JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    STRAIGHT_JOIN "User" ON "PGRScore"."User" = "User"."UserID"
+    STRAIGHT_JOIN "User" AS "GC" ON "Game"."GameCreator" = "GC"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HSTp_AA" ( IN invarUserID INT UNSIGNED,
+                                         IN invarNumPlayers TINYINT UNSIGNED,
+                                         IN invarVersionGroup INT UNSIGNED,
+                                         IN invarMe INT UNSIGNED,
+                                         IN invarStartPoint INT UNSIGNED
+                                         )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HSTp_AD" ( IN invarUserID INT UNSIGNED,
+                                         IN invarNumPlayers TINYINT UNSIGNED,
+                                         IN invarVersionGroup INT UNSIGNED,
+                                         IN invarMe INT UNSIGNED,
+                                         IN invarStartPoint INT UNSIGNED
+                                         )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HSTp_AL" ( IN invarUserID INT UNSIGNED,
+                                         IN invarNumPlayers TINYINT UNSIGNED,
+                                         IN invarVersionGroup INT UNSIGNED,
+                                         IN invarMe INT UNSIGNED,
+                                         IN invarStartPoint INT UNSIGNED
+                                         )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HSTp_CA" ( IN invarUserID INT UNSIGNED,
+                                         IN invarNumPlayers TINYINT UNSIGNED,
+                                         IN invarVersionGroup INT UNSIGNED,
+                                         IN invarMe INT UNSIGNED,
+                                         IN invarStartPoint INT UNSIGNED
+                                         )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HSTp_CD" ( IN invarUserID INT UNSIGNED,
+                                         IN invarNumPlayers TINYINT UNSIGNED,
+                                         IN invarVersionGroup INT UNSIGNED,
+                                         IN invarMe INT UNSIGNED,
+                                         IN invarStartPoint INT UNSIGNED
+                                         )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+// This procedure is planned but not yet implemented; MySQL doesn't currently allow stored procedure variables in the LIMIT clause of a SELECT query.
+
+CREATE !!!!! PROCEDURE "Stats_HSTp_CL" ( IN invarUserID INT UNSIGNED,
+                                         IN invarNumPlayers TINYINT UNSIGNED,
+                                         IN invarVersionGroup INT UNSIGNED,
+                                         IN invarMe INT UNSIGNED,
+                                         IN invarStartPoint INT UNSIGNED
+                                         )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    ROUND("PGRScore"."Score"/100, 2) AS "AdaptedScore",
+    "Game"."GameID",
+    "Game"."GameName",
+    "Game"."GTitleDeletedByAdmin",
+    "Game"."GameCreator",
+    "Game"."Friendly",
+    "Game"."LastMove",
+    "PlayerGameRcd"."GameResult",
+    "User"."Name" AS "GameCreatorName",
+    "ParticipantRcd"."User"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+    JOIN "PlayerGameRcd" ON
+        "PGRScore"."Game" = "PlayerGameRcd"."Game" AND
+        "PGRScore"."User" = "PlayerGameRcd"."User"
+    JOIN "User" ON "Game"."GameCreator" = "User"."UserID"
+    LEFT JOIN "PlayerGameRcd" AS "ParticipantRcd" ON
+        "ParticipantRcd"."User" = invarMe AND
+        "Game"."GameID" = "ParticipantRcd"."Game"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+ORDER BY
+    "PGRScore"."Score" DESC
+LIMIT invarStartPoint, 100
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTc_AA" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                   IN invarVersionGroup INT UNSIGNED
+                                   )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTc_AD" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                   IN invarVersionGroup INT UNSIGNED
+                                   )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTc_AL" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                   IN invarVersionGroup INT UNSIGNED
+                                   )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTc_CA" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                   IN invarVersionGroup INT UNSIGNED
+                                   )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTc_CD" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                   IN invarVersionGroup INT UNSIGNED
+                                   )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTc_CL" ( IN invarNumPlayers TINYINT UNSIGNED,
+                                   IN invarVersionGroup INT UNSIGNED
+                                   )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTcp_AA" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTcp_AD" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTcp_AL" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTcp_CA" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTcp_CD" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."NotWon" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Stats_HSTcp_CL" ( IN invarUserID INT UNSIGNED,
+                                    IN invarNumPlayers TINYINT UNSIGNED,
+                                    IN invarVersionGroup INT UNSIGNED
+                                    )
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    COUNT(*) AS "Co"
+FROM
+    "PGRScore"
+    JOIN "Game" ON "PGRScore"."Game" = "Game"."GameID"
+    JOIN "GameVersion" ON "Game"."GVersion" = "GameVersion"."VersionID"
+WHERE
+    "PGRScore"."User" = invarUserID AND
+    "PGRScore"."Lost" = 1 AND
+    "Game"."EffectiveNumPlayers" = invarNumPlayers AND
+    "Game"."Friendly" = 0 AND
+    "GameVersion"."VersionGroup" = invarVersionGroup
+;
+
+END>>>>>

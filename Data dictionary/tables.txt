@@ -1,0 +1,803 @@
+// Data Dictionary for Brass: Tables
+
+CREATE DATABASE "Brass" CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "User" (
+    -- This CREATE TABLE statement is not accurate. I made an abortive
+    -- attempt to redesign the table, and I haven't gone back and made it
+    -- more clear which columns are really part of the table right now
+    -- and which are only planned.
+    "UserID" SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    "Name" VARCHAR(20) NOT NULL,
+    "Password" CHAR(34) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    "ScrambleKey" CHAR(34) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    "Email" VARCHAR(50) CHARACTER SET ascii COLLATE ascii_general_ci,
+    "Pronoun" ENUM('He', 'She', 'It') NOT NULL,
+    "Language" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "TimeZone" TINYINT UNSIGNED NOT NULL,
+    "SecretQuestion" TINYINT UNSIGNED NOT NULL,
+    "SecretAnswer" CHAR(34) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    "BadAttempts" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "BecomesAccessible" DATETIME NOT NULL,
+    "RegistrationDate" DATETIME NOT NULL,
+    "LastLogin" DATETIME NOT NULL,
+    "LastMove" DATETIME,
+    "LastPostMessage" DATETIME,
+    "PersonalStatement" MEDIUMTEXT,
+    "MessagesPosted" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "GamesStartedCounter" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "UserValidated" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "Administrator" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "Translator" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "Banned" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "DenyAccess" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "LockPS" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "EmailPrompt" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "EmailPromptAgain" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "HasBeenEmailed" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "EmailAtEnd" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "AutoSort" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "AllowContact" TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    "PublicWatch" TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    "DefaultTimeLimitA" SMALLINT UNSIGNED NOT NULL DEFAULT 2160, -- 36 hours as minutes
+    "DefaultTimeLimitB" SMALLINT UNSIGNED NOT NULL DEFAULT 10080, -- 7 days as minutes
+    "PreferredDoAtB" TINYINT UNSIGNED NOT NULL DEFAULT 3,
+    "PreferredCurrencySymbol" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "CurrencySymbolLocation" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "BlinkRate" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "AlwaysShowCanals" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 1!
+    "AlwaysShowRails" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 2!
+    "ShowInaccessiblePlaces" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 4!
+    "ShowVirtualConnection" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 8!
+    "CompactBoard" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 16!
+    "WideMode" TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 32!
+    "BSIncomeTrack" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 64!
+    "EmptyStackEmptySet" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 128!
+    "CanalProj" TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 256!
+    "ProjIncludeMoney" TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 512!
+    "ShowAsBlue" TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 1024!
+    "AlertDisplay" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 2048!
+    "CheckForMoves" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 4096!
+    "ReverseTicker" TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 8192!
+    "AlwaysHideMsgs" TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 16384!
+    "ReverseMessages" TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 32768!
+    "DefaultFriendly" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 65536!
+    "DefaultNoSC" TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 131072!
+    "DefaultRVC" TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 262144!
+    "DefaultORAW" TINYINT UNSIGNED NOT NULL DEFAULT 1, -- 524288!
+        -- It's kind of stupid to have 'Messages' abbreviated as 'Msgs'
+        -- here, yet have other column-names in which 'Messages' is
+        -- unabbreviated. It would be good to make this more consistent.
+            -- We'll just combine this column with the other
+            -- binary preferences; see below.
+    "NoSwapCards" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+        -- Let's get rid of this one. It won't
+        -- be needed once the redesign is done.
+    "ColouredArrows" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+        -- Remove this altogether, it's silly and unnecessary.
+    "Rating" SMALLINT NOT NULL DEFAULT 0,
+    "NumGamesPlayed" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumGamesCompleted" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumGamesFourPlayer" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumGamesThreePlayer" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumGamesTwoPlayer" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumCompetitiveGamesPlayed" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumCompetitiveGamesCompleted" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumCompetitiveGamesWon" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumCompetitiveGamesFourPlayer" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumCompetitiveGamesThreePlayer" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumCompetitiveGamesTwoPlayer" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "RankGamesCompleted" SMALLINT UNSIGNED,
+    "RankGamesCompletedTie" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "RankRating" SMALLINT UNSIGNED,
+    "RankRatingTie" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "BinaryPreferences" INT UNSIGNED NOT NULL DEFAULT 596191,
+        -- This can be used to store up to 31 binary preference settings.
+        -- Notwithstanding that it is an INT UNSIGNED, it should not be used
+        -- to store a 32nd, because this would reduce the portability of the
+        -- application: when PHP is running on a 32-bit system, PHP_INT_MAX
+        -- is equal to 2^31 - 1 (PHP doesn't implement unsigned integers).
+    -- To be used to replace the welter of individual preference-setting columns
+    -- (marked with '--#!').
+    "BinarySiteBehaviourSettings" SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+        -- This can be used to store up to 16 binary settings that
+        -- control game and site behaviours that relate to the user.
+    -- To be used to replace the Email columns, AutoSort, and so on. DEFAULT to be changed.
+    "Badge" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    PRIMARY KEY ("UserID"),
+    UNIQUE KEY "Name_uk" ("Name"),
+    UNIQUE KEY "Email_uk" ("Email"),
+    INDEX "NumGamesCompleted_ind" ("UserValidated", "NumGamesCompleted"),
+    INDEX "Rating_ind" ("UserValidated", "Rating")
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "Game" (
+    -- I need to reorder the columns in this table.
+    "GameID" MEDIUMINT UNSIGNED NOT NULL,
+    "GameName" VARCHAR(50) NOT NULL,
+    "GTitleDeletedByAdmin" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "GameCreator" SMALLINT UNSIGNED NOT NULL,
+    "GVersion" TINYINT UNSIGNED NOT NULL,
+    "LastMove" DATETIME NOT NULL,
+    "TimeLimitA" SMALLINT UNSIGNED NOT NULL,
+    "TimeLimitB" SMALLINT UNSIGNED NOT NULL,
+    "GameStatus" ENUM( 'Recruiting',
+                       'In Progress',
+                       'Finished',
+                       'Aborted',
+                       'Cancelled',
+                       'Recruiting Replacement'
+                       ) NOT NULL DEFAULT 'Recruiting',
+    "Friendly" TINYINT UNSIGNED NOT NULL,
+    "OriginalPlayers" TINYINT UNSIGNED,
+    "CurrentPlayers" TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    "PlayerExists" CHAR(5) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+    "TurnOrder" CHAR(5) CHARACTER SET ascii COLLATE ascii_general_ci,
+    "RailPhase" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumRounds" TINYINT UNSIGNED NOT NULL,
+    "Round" TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    "Money" VARCHAR(19) CHARACTER SET ascii COLLATE ascii_general_ci,
+    "AmountSpent" VARCHAR(14) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '0|0|0|0|0',
+    "IncomeSpace" VARCHAR(14) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '10|10|10|10|10',
+    "VictoryPoints" VARCHAR(19) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '0|0|0|0|0',
+    "RemainingTiles"
+        CHAR(30) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+        DEFAULT 'ccccc77777444448888866666eeeee',
+    "LinkStatus" VARBINARY(50) NOT NULL DEFAULT '',
+    "SpaceStatus" VARBINARY(50) NOT NULL DEFAULT '',
+    "SpaceTile" VARBINARY(50) NOT NULL DEFAULT '',
+    "TechLevels" VARBINARY(50) NOT NULL DEFAULT '',
+    "SpaceCubes" VARBINARY(50) NOT NULL DEFAULT '',
+    "CoalDemand" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "IronDemand" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "CottonDemand" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "TalkRules" ENUM( 'No Talk Whatsoever',
+                      'No Talk During Game',
+                      'No Talk by Outsiders',
+                      'No Talk by Outsiders During Game',
+                      'No Restrictions'
+                      ) NOT NULL,
+    "GameTicker" TEXT CHARACTER SET ascii COLLATE ascii_general_ci,
+    "RandomLog" VARCHAR(255) CHARACTER SET ascii COLLATE ascii_general_ci,
+    "ModularBoardParts" TINYINT UNSIGNED NOT NULL DEFAULT 7,
+    "SpecialRules" TINYINT UNSIGNED NOT NULL,
+    "EffectiveNumPlayers" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "DoWhatAtB" ENUM( 'Downsize',
+                      'Abort',
+                      'Kick current player; subsequently downsize',
+                      'Kick current player; subsequently abort'
+                      ) NOT NULL DEFAULT 'Kick current player; subsequently abort',
+    "GameIsFinished" TINYINT NOT NULL DEFAULT 0,
+    "GameTickerNames" TEXT,
+    PRIMARY KEY ("GameID"),
+    INDEX "GameList_ind_Game" ("GameStatus"),
+    INDEX "FinishedGames_ind" ("GameIsFinished", "LastMove"),
+    INDEX "Stats_ind_Game" ("EffectiveNumPlayers", "GVersion", "Friendly"),
+    CONSTRAINT "Constr_Game_GameCreator_fk"
+        FOREIGN KEY "GameCreator_fk" ("GameCreator") REFERENCES "User" ("UserID")
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Constr_Game_GVersion_fk"
+        FOREIGN KEY "GVersion_fk" ("GVersion") REFERENCES "GameVersion" ("VersionID")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_Game_Thread_fk"
+        FOREIGN KEY "Thread_fk" ("GameID") REFERENCES "GeneralThread" ("ThreadID")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "PlayerGameRcd" (
+    "User" SMALLINT UNSIGNED NOT NULL,
+    "Game" MEDIUMINT UNSIGNED NOT NULL,
+    "GameResult" ENUM( 'Quit',
+                       'Kicked by Vote',
+                       'Kicked by Admin',
+                       'Kicked by System',
+                       'Finished 5th',
+                       'Finished 4th',
+                       'Finished 3rd',
+                       'Finished 2nd',
+                       'Finished 1st',
+                       'Game Aborted',
+                       'Playing',
+                       'Hide'
+                       ) NOT NULL DEFAULT 'Playing',
+    "Inherited" TINYINT NOT NULL,
+    "GameCounts" TINYINT NOT NULL,
+    "Colour" TINYINT UNSIGNED NOT NULL,
+    "NumLongTurns" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "CurrentOccupant" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+        -- CurrentOccupant is set to 0 if the user is currently playing in the
+        -- game as the indicated colour. When a player leaves a game, the
+        -- CurrentOccupant column is incremented for all records that match the
+        -- appropriate Game and Colour values (including that of the departing
+        -- player). This is to permit the unique key pgr_multi_uk.
+    PRIMARY KEY ("Game", "User"),
+    UNIQUE KEY "PGR_multi_uk" ("Game", "CurrentOccupant", "Colour"),
+    INDEX "GameList_ind_PGR" ("User", "CurrentOccupant", "Game", "Colour"),
+    CONSTRAINT "Constr_PlayerGameRcd_User_fk"
+        FOREIGN KEY "User_fk" ("User") REFERENCES "User" ("UserID")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_PlayerGameRcd_Game_fk"
+        FOREIGN KEY "Game_fk" ("Game") REFERENCES "Game" ("GameID")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "PGRScore" (
+    "Game" MEDIUMINT UNSIGNED NOT NULL,
+    "User" SMALLINT UNSIGNED NOT NULL,
+    "Score" SMALLINT UNSIGNED NOT NULL,
+    "NotWon" TINYINT UNSIGNED NOT NULL,
+    "Lost" TINYINT UNSIGNED NOT NULL,
+    PRIMARY KEY ("Game", "User"),
+    INDEX "UserScoreInd" ("User", "Score"),
+    INDEX "ScoreInd" ("Score"),
+    INDEX "NotWonScoreInd" ("NotWon", "Score"),
+    INDEX "LostScoreInd" ("Lost", "Score"),
+    INDEX "CountInd" ("Game", "NotWon", "Lost"),
+    CONSTRAINT "Constr_PGRScore_PlayerGameRcd_fk"
+        FOREIGN KEY ("Game", "User") REFERENCES "PlayerGameRcd" ("Game", "User")
+       ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB CHARACTER SET ascii COLLATE ascii_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "PlayerGameNotes" (
+    "User" SMALLINT UNSIGNED NOT NULL,
+    "Game" MEDIUMINT UNSIGNED NOT NULL,
+    "Notes" MEDIUMTEXT NOT NULL,
+    PRIMARY KEY ("Game", "User"),
+    CONSTRAINT "Constr_PlayerGameNotes_PlayerGameRcd_fk"
+        FOREIGN KEY "PlayerGameRcd_fk" ("Game", "User") REFERENCES "PlayerGameRcd" ("Game", "User")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "GameInProgress" (
+    "Game" MEDIUMINT UNSIGNED NOT NULL,
+    "GameRecruitingReplacement" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "AverageRating" SMALLINT NOT NULL,
+    "AppearancePriority" SMALLINT NOT NULL,
+    "LastEvent" DATETIME NOT NULL,
+    "GIPLastMove" DATETIME NOT NULL,
+    "GIPTimeLimitA" SMALLINT UNSIGNED NOT NULL,
+    "GIPTimeLimitB" SMALLINT UNSIGNED NOT NULL,
+    "NumMovesMade" SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumDepartures" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "PlayerToMove" TINYINT UNSIGNED NOT NULL,
+    "SpecialModes" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "AbortVote" CHAR(5) NOT NULL DEFAULT '00000',
+    "KickVote" CHAR(5) NOT NULL DEFAULT '00000',
+    "Cards" VARCHAR(255) NOT NULL,
+    "HasPort" VARCHAR(100) NOT NULL,
+    "CoalNet" VARCHAR(255) NOT NULL,
+    "ShuffledDeck" VARCHAR(255) NOT NULL,
+    "DiscardPile" VARCHAR(255) NOT NULL DEFAULT '',
+    "ShuffledTiles" VARCHAR(50) NOT NULL,
+    "TilesDrawn" VARCHAR(50) NOT NULL DEFAULT 'None',
+    "PlayerToMoveName" VARCHAR(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    "PlayerToMoveID" SMALLINT UNSIGNED,
+    PRIMARY KEY ("Game"),
+    INDEX "GameList_ind_GameInProgress" ("GameRecruitingReplacement", "AppearancePriority"),
+    INDEX "Maintenance_ind" ("GameRecruitingReplacement", "GIPLastMove", "GIPTimeLimitB", "GIPTimeLimitA"),
+    CONSTRAINT "Constr_GameInProgress_Game_fk"
+        FOREIGN KEY "Game_fk" ("Game") REFERENCES "Game" ("GameID")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_GameInProgress_PlayerToMove_fk"
+        FOREIGN KEY "PlayerToMove_fk" ("PlayerToMoveID") REFERENCES "User" ("UserID")
+        ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "GameVersionGroup" (
+    "VersionGroupID" TINYINT UNSIGNED NOT NULL,
+    "VersionName" VARCHAR(50) NOT NULL,
+    PRIMARY KEY ("VersionGroupID")
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+-- This is what table "GameVersion" looks like at present.
+
+CREATE TABLE "GameVersion" (
+    "VersionID" TINYINT UNSIGNED NOT NULL,
+    "TopLocationCard" TINYINT NOT NULL,
+    "LocationNames" VARCHAR(1000) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    "SpaceTowns" VARCHAR(140) NOT NULL,
+    "TileIndustries" VARCHAR(120) NOT NULL,
+    "CanalStarts" VARCHAR(150) NOT NULL,
+    "CanalEnds" VARCHAR(160) NOT NULL,
+    "RailStarts" VARCHAR(150) NOT NULL,
+    "RailEnds" VARCHAR(160) NOT NULL,
+    "CanalAlwaysExists" VARCHAR(100) NOT NULL,
+    "CanalExistenceArray" VARCHAR(100) NOT NULL,
+    "RailAlwaysExists" VARCHAR(100) NOT NULL,
+    "RailExistenceArray" VARCHAR(100) NOT NULL,
+    "SpaceAlwaysExists" VARCHAR(120) NOT NULL,
+    "SpaceExistenceArray" VARCHAR(120) NOT NULL,
+    "VirtualConnections" VARCHAR(50),
+    "TileDenyStrategicBlock" VARCHAR(200),
+    "CardDetailArray" VARCHAR(200),
+    "CardDetailArrayB" VARCHAR(220),
+    "SpaceNumbers" VARCHAR(180) NOT NULL,
+    "SpaceOrdinals" VARCHAR(255) NOT NULL,
+    "ExternalLocations" VARCHAR(80) NOT NULL,
+    "LocationAutoValue" VARCHAR(80) NOT NULL,
+    "PrimaryLocations" VARCHAR(80) NOT NULL,
+    "CardsToRemove" VARCHAR(200),
+    "MinimumPlayersAllowed" TINYINT UNSIGNED NOT NULL,
+    "MaximumPlayersAllowed" TINYINT UNSIGNED NOT NULL,
+    "TileXPositionsPretty" VARCHAR(200),
+    "TileYPositionsPretty" VARCHAR(200),
+    "TileXPositionsCompact" VARCHAR(200) NOT NULL,
+    "TileYPositionsCompact" VARCHAR(200) NOT NULL,
+    "CanalXPositionsPretty" VARCHAR(150),
+    "CanalYPositionsPretty" VARCHAR(150),
+    "CanalXPositionsCompact" VARCHAR(150) NOT NULL,
+    "CanalYPositionsCompact" VARCHAR(150) NOT NULL,
+    "RailXPositionsPretty" VARCHAR(200),
+    "RailYPositionsPretty" VARCHAR(200),
+    "RailXPositionsCompact" VARCHAR(200) NOT NULL,
+    "RailYPositionsCompact" VARCHAR(200) NOT NULL,
+    "CurrencySymbol" TINYINT UNSIGNED NOT NULL DEFAULT 2,
+    "VersionName" VARCHAR(60) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    "Creators" VARCHAR(60) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    "GVAdminOnly" TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    "ShortVersionName" VARCHAR(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    "VersionClass" TINYINT UNSIGNED NOT NULL,
+    PRIMARY KEY ("VersionID"),
+    KEY "VersionClass_ind" ("VersionClass")
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_general_ci
+
+-- This is what it should look like after modifications:
+
+CREATE TABLE "GameVersion" (
+    "VersionID" TINYINT UNSIGNED NOT NULL,
+    "VersionGroup" TINYINT UNSIGNED NOT NULL,
+    "AdminOnly" TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    "TestVersion" TINYINT UNSIGNED NOT NULL,
+        -- Added
+    "MinimumPlayersAllowed" TINYINT UNSIGNED NOT NULL,
+    "MaximumPlayersAllowed" TINYINT UNSIGNED NOT NULL,
+    "CurrencySymbol" TINYINT UNSIGNED NOT NULL DEFAULT 2,
+    "TopLocationCard" TINYINT UNSIGNED NOT NULL,
+        -- Change to UNSIGNED
+    "VersionNameSuffix" VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_general_ci,
+    "ShortVersionName" VARCHAR(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    "Creators" VARCHAR(60) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    "BoardDimensions" VARCHAR(50) NOT NULL,
+        -- Added
+        -- Should give dimensions of board as determined by whether 'pretty mode' is on
+    "LocationNames" VARCHAR(1000) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+    "SpaceTowns" VARCHAR(140) NOT NULL,
+    "TileIndustries" VARCHAR(120) NOT NULL,
+    "CanalStarts" VARCHAR(150) NOT NULL,
+    "CanalEnds" VARCHAR(160) NOT NULL,
+    "RailStarts" VARCHAR(150) NOT NULL,
+    "RailEnds" VARCHAR(160) NOT NULL,
+    "VirtualConnections" VARCHAR(50),
+    "TileDenyStrategicBlock" VARCHAR(200),
+    "CardDetailArray" VARCHAR(200),
+    "SpaceNumbers" VARCHAR(180) NOT NULL,
+    "SpaceOrdinals" VARCHAR(255) NOT NULL,
+    "ExternalLocations" VARCHAR(80) NOT NULL,
+    "LocationAutoValue" VARCHAR(80) NOT NULL,
+    PRIMARY KEY ("VersionID"),
+    CONSTRAINT "Constr_GameVersion_GameVersionGroup_fk"
+        FOREIGN KEY "VersionGroup_fk" ("VersionGroup") REFERENCES "GameVersionGroup" ("VersionGroupID")
+        ON DELETE RESTRICT ON UPDATE CASCADE
+        -- Added
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "GameVersionAuth" (
+    "User" SMALLINT UNSIGNED NOT NULL,
+    "Version" TINYINT UNSIGNED NOT NULL,
+    PRIMARY KEY ("User", "Version"),
+    CONSTRAINT "Constr_GameVersionAuth_User_fk"
+        FOREIGN KEY "User_fk" ("User") REFERENCES "User" ("UserID")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_GameVersionAuth_Version_fk"
+        FOREIGN KEY "Version_fk" ("Version") REFERENCES "GameVersion" ("VersionID")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "LobbySettings" (
+    "Game" MEDIUMINT UNSIGNED NOT NULL,
+    "MinimumPlayers" TINYINT UNSIGNED NOT NULL,
+    "MaximumPlayers" TINYINT UNSIGNED NOT NULL,
+    "MinimumRating" SMALLINT NOT NULL,
+    "MaximumRating" SMALLINT,
+    "AutoStart" TINYINT UNSIGNED NOT NULL,
+    "AnyPlayerStarts" TINYINT UNSIGNED NOT NULL,
+    "InitialTurnOrder" ENUM( 'Red, Yellow, Green, Purple, Grey',
+                             'Red, Yellow, Green, Grey, Purple',
+                             'Red, Yellow, Purple, Green, Grey',
+                             'Red, Yellow, Purple, Grey, Green',
+                             'Red, Yellow, Grey, Green, Purple',
+                             'Red, Yellow, Grey, Purple, Green',
+                             'Red, Green, Yellow, Purple, Grey',
+                             'Red, Green, Yellow, Grey, Purple',
+                             'Red, Green, Purple, Yellow, Grey',
+                             'Red, Green, Purple, Grey, Yellow',
+                             'Red, Green, Grey, Yellow, Purple',
+                             'Red, Green, Grey, Purple, Yellow',
+                             'Red, Purple, Yellow, Green, Grey',
+                             'Red, Purple, Yellow, Grey, Green',
+                             'Red, Purple, Green, Yellow, Grey',
+                             'Red, Purple, Green, Grey, Yellow',
+                             'Red, Purple, Grey, Yellow, Green',
+                             'Red, Purple, Grey, Green, Yellow',
+                             'Red, Grey, Yellow, Green, Purple',
+                             'Red, Grey, Yellow, Purple, Green',
+                             'Red, Grey, Green, Yellow, Purple',
+                             'Red, Grey, Green, Purple, Yellow',
+                             'Red, Grey, Purple, Yellow, Green',
+                             'Red, Grey, Purple, Green, Yellow',
+                             'Random'
+                             ) NOT NULL DEFAULT 'Random',
+    "CreationTime" DATETIME NOT NULL,
+    "GPrivate" TINYINT UNSIGNED NOT NULL,
+    "Password" VARCHAR(20) CHARACTER SET utf8 COLLATE utf8_general_ci,
+    PRIMARY KEY ("Game"),
+    CONSTRAINT "Constr_LobbySettings_Game_fk"
+        FOREIGN KEY "Game_fk" ("Game") REFERENCES "Game" ("GameID")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "ReplacementOffer" (
+    "User" SMALLINT UNSIGNED NOT NULL,
+    "Game" MEDIUMINT UNSIGNED NOT NULL,
+    "ToCount" TINYINT UNSIGNED NOT NULL,
+    "Colour" TINYINT UNSIGNED NOT NULL,
+    PRIMARY KEY ("User", "Game"),
+    CONSTRAINT "Constr_ReplacementOffer_User_fk"
+        FOREIGN KEY "User_fk" ("User") REFERENCES "User" ("UserID")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_ReplacementOffer_Game_fk"
+        FOREIGN KEY "Game_fk" ("Game") REFERENCES "Game" ("GameID")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "WatchedGame" (
+    "User" SMALLINT UNSIGNED NOT NULL,
+    "Game" MEDIUMINT UNSIGNED NOT NULL,
+    PRIMARY KEY ("User", "Game"),
+    CONSTRAINT "Constr_WatchedGame_User_fk"
+        FOREIGN KEY "User_fk" ("User") REFERENCES "User" ("UserID")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_WatchedGame_Game_fk"
+        FOREIGN KEY "Game_fk" ("Game") REFERENCES "Game" ("GameID")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "Email" (
+    "EmailID" SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    "Sender" SMALLINT UNSIGNED NOT NULL,
+    "Recipient" SMALLINT UNSIGNED NOT NULL,
+    "DateSent" DATETIME NOT NULL,
+    "EmailText" MEDIUMTEXT NOT NULL,
+    PRIMARY KEY ("EmailID"),
+    INDEX "Recipient_Sender_ind" ("Recipient", "Sender"),
+    INDEX "DateSent_ind" ("DateSent"),
+    CONSTRAINT "Constr_Email_Sender_fk"
+        FOREIGN KEY "Sender_fk" ("Sender") REFERENCES "User" ("UserID")
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Constr_Email_Recipient_fk"
+        FOREIGN KEY "Recipient_fk" ("Recipient") REFERENCES "User" ("UserID")
+        ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "Message" (
+    "MessageID" MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    "User" SMALLINT UNSIGNED NOT NULL,
+    "Thread" MEDIUMINT UNSIGNED NOT NULL,
+    "PostDate" DATETIME NOT NULL,
+    "DeletedByUser" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "DeletedByAdmin" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "MessageText" MEDIUMTEXT NOT NULL,
+    PRIMARY KEY ("MessageID"),
+    CONSTRAINT "Constr_Message_User_fk"
+        FOREIGN KEY "User_fk" ("User") REFERENCES "User" ("UserID")
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Constr_Message_Thread_fk"
+        FOREIGN KEY "Thread_fk" ("Thread") REFERENCES "GeneralThread" ("ThreadID")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "GeneralThread" (
+    "ThreadID" MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    "NumberOfPosts" SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+    "Closed" ENUM( 'Forced Open',
+                   'Open',
+                   'Closed',
+                   'Forced Closed'
+                   ) NOT NULL,
+    PRIMARY KEY ("ThreadID")
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "NonGameThread" (
+    "Thread" MEDIUMINT UNSIGNED NOT NULL,
+    "Board" TINYINT UNSIGNED NOT NULL,
+    "OriginalBoard" TINYINT UNSIGNED NOT NULL,
+    "OriginalPoster" SMALLINT UNSIGNED NOT NULL,
+    "LastPoster" SMALLINT UNSIGNED NOT NULL,
+    "LastPost" DATETIME NOT NULL,
+    "Sticky" TINYINT UNSIGNED NOT NULL,
+    "TitleDeletedByAdmin" TINYINT NOT NULL DEFAULT 0,
+    "Title" VARCHAR(80) NOT NULL,
+    PRIMARY KEY ("Thread"),
+    INDEX "Listing_ind" ("Board", "Sticky", "LastPost"),
+    CONSTRAINT "NonGameThread_Thread_fk"
+        FOREIGN KEY "Thread_fk" ("Thread") REFERENCES "GeneralThread" ("ThreadID")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_NonGameThread_Board_fk"
+        FOREIGN KEY "Board_fk" ("Board") REFERENCES "Board" ("BoardID")
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Constr_NonGameThread_OriginalBoard_fk"
+        FOREIGN KEY "OriginalBoard_fk" ("OriginalBoard") REFERENCES "Board" ("BoardID")
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Constr_NonGameThread_OriginalPoster_fk"
+        FOREIGN KEY "OriginalPoster_fk" ("OriginalPoster") REFERENCES "User" ("UserID")
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Constr_NonGameThread_LastPoster_fk"
+        FOREIGN KEY "LastPoster_fk" ("LastPoster") REFERENCES "User" ("UserID")
+        ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "Board" (
+    "BoardID" TINYINT UNSIGNED NOT NULL,
+    "OrderingNumber" SMALLINT UNSIGNED NOT NULL,
+    "BName" VARCHAR(200) NOT NULL,
+    "Closed" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "AdminOnly" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "LastPost" DATETIME NOT NULL,
+    "LastPoster" SMALLINT UNSIGNED,
+    "LastThread" MEDIUMINT UNSIGNED,
+    "NumThreads" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    "NumMessages" MEDIUMINT UNSIGNED NOT NULL DEFAULT 0,
+    PRIMARY KEY ("BoardID"),
+    CONSTRAINT "Constr_Board_LastPoster_fk"
+        FOREIGN KEY "LastPoster_fk" ("LastPoster") REFERENCES "User" ("UserID")
+        ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "Constr_Board_LastThread_fk"
+        FOREIGN KEY "LastThread_fk" ("LastThread") REFERENCES "NonGameThread" ("Thread")
+        ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "TranslationLanguage" (
+    "LanguageID" TINYINT UNSIGNED NOT NULL,
+    "LanguageNameInEnglish" VARCHAR(20) NOT NULL,
+    "LanguageNameInLanguage" VARCHAR(20) NOT NULL,
+    PRIMARY KEY ("LanguageID")
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "TranslationModule" (
+    "ModuleID" TINYINT UNSIGNED NOT NULL,
+    "ModuleName" VARCHAR(30) NOT NULL,
+    "ModuleDescription" VARCHAR(200) NOT NULL,
+    PRIMARY KEY ("ModuleID")
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "Phrase" (
+    "PhraseName" CHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    "Module" TINYINT UNSIGNED NOT NULL,
+    "CurrentlyInUse" TINYINT UNSIGNED NOT NULL,
+    "OrderingNumber" SMALLINT UNSIGNED NOT NULL,
+    "PhraseInEnglish" VARCHAR(500) NOT NULL,
+    "Description" VARCHAR(250),
+    "Notes" VARCHAR(250),
+    "FormInUse" VARCHAR(500) NOT NULL,
+    PRIMARY KEY ("PhraseName"),
+    INDEX "OrderingIndex" ("Module", "CurrentlyInUse", "OrderingNumber"),
+    CONSTRAINT "Constr_Phrase_Module_fk"
+        FOREIGN KEY "Module_fk" ("Module") REFERENCES "TranslationModule" ("ModuleID")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "TranslatedPhrase" (
+    "Language" TINYINT UNSIGNED NOT NULL,
+    "PhraseName" CHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    "Translator" SMALLINT UNSIGNED NOT NULL,
+    "Chosen" TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    "Translation" VARCHAR(750) NOT NULL,
+    "Comment" VARCHAR(250),
+    PRIMARY KEY ("Language", "PhraseName", "Translator"),
+    CONSTRAINT "Constr_TranslatedPhrase_Language_fk"
+        FOREIGN KEY "Language_fk" ("Language") REFERENCES "TranslationLanguage" ("LanguageID")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_TranslatedPhrase_PhraseName_fk"
+        FOREIGN KEY "PhraseName_fk" ("PhraseName") REFERENCES "Phrase" ("PhraseName")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_TranslatedPhrase_Translator_fk"
+        FOREIGN KEY "Translator_fk" ("Translator") REFERENCES "User" ("UserID")
+        ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "ChosenTranslatedPhrase" (
+    "Language" TINYINT UNSIGNED NOT NULL,
+    "PhraseName" CHAR(16) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    "Translation" VARCHAR(750) NOT NULL,
+    PRIMARY KEY ("Language", "PhraseName"),
+    CONSTRAINT "Constr_ChosenTranslatedPhrase_Language_fk"
+        FOREIGN KEY "Language_fk" ("Language") REFERENCES "TranslationLanguage" ("LanguageID")
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Constr_ChosenTranslatedPhrase_PhraseName_fk"
+        FOREIGN KEY "PhraseName_fk" ("PhraseName") REFERENCES "Phrase" ("PhraseName")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "ToDoListItem" (
+    "ItemID" SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    "OrderingNumber" SMALLINT UNSIGNED NOT NULL,
+    "Description" VARCHAR(750) NOT NULL,
+    PRIMARY KEY ("ItemID")
+) ENGINE=BLACKHOLE CHARACTER SET utf8 COLLATE utf8_general_ci
+-- ENGINE=INNODB in test database
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "ToDoListSubItem" (
+    "Item" SMALLINT UNSIGNED NOT NULL,
+    "SubItemNumber" TINYINT UNSIGNED NOT NULL,
+    "OrderingNumber" SMALLINT UNSIGNED NOT NULL,
+    "Description" VARCHAR(750) NOT NULL,
+    PRIMARY KEY ("Item", "SubItemNumber"),
+    CONSTRAINT "Constr_ToDoListSubItem_ToDoListItem_fk"
+        FOREIGN KEY "ToDoListItem_fk" ("Item") REFERENCES "ToDoListItem" ("ItemID")
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=BLACKHOLE CHARACTER SET utf8 COLLATE utf8_general_ci
+-- ENGINE=INNODB in test database
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "MaintenanceScript" (
+    "ScriptName" CHAR(3) NOT NULL,
+    PRIMARY KEY ("ScriptName")
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_bin
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "MaintenanceRecord" (
+    "ScriptName" CHAR(3) NOT NULL,
+    "RunDate" DATETIME NOT NULL,
+    "MaintenanceDisabled" TINYINT UNSIGNED NOT NULL,
+    PRIMARY KEY ("ScriptName", "RunDate"),
+    CONSTRAINT "Constr_MaintenanceRecord_MaintenanceScript_fk"
+        FOREIGN KEY "MaintenanceScript_fk" ("ScriptName") REFERENCES "MaintenanceScript" ("ScriptName")
+        ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_bin
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "RecentEventLog" (
+    "EventID" INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    "EventType" ENUM( 'User',
+                      'Game',
+                      'Message',
+                      'Email',
+                      'Maintenance'
+                      ) NOT NULL,
+    "EventTime" DATETIME NOT NULL,
+    "ExtraData" MEDIUMINT UNSIGNED,
+    PRIMARY KEY ("EventID"),
+    INDEX "SearchIndex" ("EventType", "EventTime")
+) ENGINE=INNODB CHARACTER SET ascii COLLATE ascii_bin
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE TABLE "Metadatum" (
+    "MetadatumName" VARCHAR(50) NOT NULL,
+    "MetadatumValue" INT UNSIGNED NOT NULL,
+    PRIMARY KEY ("MetadatumName")
+) ENGINE=MYISAM CHARACTER SET ascii COLLATE ascii_bin
+
+INSERT INTO "Metadatum" ("MetadatumName", "MetadatumValue") VALUES
+    ('Users-Total', 0),
+    ('Users-Active', 0),
+    ('Messages', 0),
+    ('Games-Finished', 0),
+    ('Games-InProgress', 0),
+    ('Games-Total', 0),
+    ('Games-Players4', 0),
+    ('Games-Players3', 0),
+    ('Games-Players2', 0),
+    ('Games-Competitive', 0),
+    ('Games-Competitive-Players4', 0),
+    ('Games-Competitive-Players3', 0),
+    ('Games-Competitive-Players2', 0),
+    ('CreationTimestamp', 1231099200)
+    ('Players', 0)

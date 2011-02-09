@@ -1,0 +1,622 @@
+// Data Dictionary for Brass: Procedures: Data operations and maintenance
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "CalculateRating" (IN invarUserID INT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+UPDATE
+    "User"
+SET
+    "Rating" = (
+        SELECT
+            CASE
+                WHEN "NumPlays" IS NULL THEN 0
+                WHEN "NumPlays" = 0 THEN 0
+                ELSE ROUND(10000*POW(1-1/"NumPlays", 2)*"NumWins"/"NumPlays")
+            END AS "UsersRating"
+        FROM
+            (
+                SELECT
+                    SUM(
+                        CASE "Game"."EffectiveNumPlayers"
+                            WHEN 2 THEN 0.8
+                            ELSE 1
+                        END
+                    ) AS "NumPlays",
+                    SUM(
+                        CASE
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 1st' AND
+                                "Game"."EffectiveNumPlayers" = 2
+                            THEN 0.8
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 1st' AND
+                                "Game"."EffectiveNumPlayers" > 2
+                            THEN 1
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 2nd' AND
+                                "Game"."EffectiveNumPlayers" = 3
+                            THEN 0.44
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 2nd' AND
+                                "Game"."EffectiveNumPlayers" = 4
+                            THEN 0.63
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 3rd' AND
+                                "Game"."EffectiveNumPlayers" = 4
+                            THEN 0.26
+                            ELSE 0
+                        END
+                    ) AS "NumWins"
+                FROM
+                    "PlayerGameRcd"
+                    LEFT JOIN "Game" ON "PlayerGameRcd"."Game" = "Game"."GameID"
+                WHERE
+                    "PlayerGameRcd"."GameCounts" = 1 AND
+                    "PlayerGameRcd"."GameResult" NOT IN ('Game Aborted',
+                                                         'Playing',
+                                                         'Hide'
+                                                         ) AND
+                    "PlayerGameRcd"."User" = invarUserID AND
+                    "Game"."LastMove" > TIMESTAMPADD(MONTH, -5, UTC_TIMESTAMP()) AND
+                    "Game"."Friendly" = 0
+            ) AS "SubqueryA"
+    )
+WHERE
+    "UserID" = invarUserID
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "CalculateAllRatings" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DECLARE varFinished TINYINT DEFAULT 0;
+DECLARE varUserID INT UNSIGNED;
+DECLARE varUserRating SMALLINT;
+
+DECLARE Cur CURSOR FOR
+    SELECT
+        "User"."UserID",
+        IFNULL("SubqueryB"."UserRating", 0) AS "UserRating"
+    FROM
+        "User"
+        LEFT JOIN (
+            SELECT
+                "User",
+                CASE
+                    WHEN "NumPlays" IS NULL THEN 0
+                    WHEN "NumPlays" = 0 THEN 0
+                    ELSE ROUND(10000*POW(1-1/"NumPlays", 2)*"NumWins"/"NumPlays")
+                END AS "UserRating"
+            FROM (
+                SELECT
+                    "PlayerGameRcd"."User",
+                    SUM(
+                        CASE "Game"."EffectiveNumPlayers"
+                            WHEN 2 THEN 0.8
+                            ELSE 1
+                        END
+                    ) AS "NumPlays",
+                    SUM(
+                        CASE
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 1st' AND
+                                "Game"."EffectiveNumPlayers" = 2
+                            THEN 0.8
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 1st' AND
+                                "Game"."EffectiveNumPlayers" > 2
+                            THEN 1
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 2nd' AND
+                                "Game"."EffectiveNumPlayers" = 3
+                            THEN 0.44
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 2nd' AND
+                                "Game"."EffectiveNumPlayers" = 4
+                            THEN 0.63
+                            WHEN
+                                "PlayerGameRcd"."GameResult" = 'Finished 3rd' AND
+                                "Game"."EffectiveNumPlayers" = 4
+                            THEN 0.26
+                            ELSE 0
+                        END
+                    ) AS "NumWins"
+                FROM
+                    "PlayerGameRcd"
+                    LEFT JOIN "Game" ON "PlayerGameRcd"."Game" = "Game"."GameID"
+                WHERE
+                    "PlayerGameRcd"."GameCounts" = 1 AND
+                    "PlayerGameRcd"."GameResult" NOT IN ('Game Aborted',
+                                                         'Playing',
+                                                         'Hide'
+                                                         ) AND
+                    "Game"."LastMove" > TIMESTAMPADD(MONTH, -5, UTC_TIMESTAMP()) AND
+                    "Game"."Friendly" = 0
+                GROUP BY
+                    "PlayerGameRcd"."User"
+            ) AS "SubqueryA"
+        ) AS "SubqueryB" ON "User"."UserID" = "SubqueryB"."User"
+;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET varFinished = 1;
+
+OPEN Cur;
+REPEAT
+    FETCH Cur INTO varUserID, varUserRating;
+    IF varFinished = 0 THEN
+        UPDATE "User"
+        SET "Rating" = varUserRating
+        WHERE "UserID" = varUserID;
+    END IF;
+UNTIL varFinished = 1 END REPEAT;
+CLOSE Cur;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "CalculatePlayerStats" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DECLARE varFinished TINYINT DEFAULT 0;
+DECLARE varUserID INT UNSIGNED;
+DECLARE varGamesPlayed INT UNSIGNED;
+DECLARE varGamesCompleted INT UNSIGNED;
+DECLARE varGamesTwoPlayer INT UNSIGNED;
+DECLARE varGamesThreePlayer INT UNSIGNED;
+DECLARE varGamesFourPlayer INT UNSIGNED;
+DECLARE varGamesPlayedC INT UNSIGNED;
+DECLARE varGamesCompletedC INT UNSIGNED;
+DECLARE varGamesTwoPlayerC INT UNSIGNED;
+DECLARE varGamesThreePlayerC INT UNSIGNED;
+DECLARE varGamesFourPlayerC INT UNSIGNED;
+DECLARE varGamesWonC INT UNSIGNED;
+
+DECLARE Cur CURSOR FOR
+    SELECT
+        "User",
+        SUM("Co"),
+        SUM("Co" * CASE WHEN "GameResult" >= 5 THEN 1 ELSE 0 END),
+        SUM("Co" * CASE WHEN "EffectiveNumPlayers" = 2 THEN 1 ELSE 0 END),
+        SUM("Co" * CASE WHEN "EffectiveNumPlayers" = 3 THEN 1 ELSE 0 END),
+        SUM("Co" * CASE WHEN "EffectiveNumPlayers" = 4 THEN 1 ELSE 0 END),
+        SUM("Co" * CASE WHEN "Friendly" = 0 THEN 1 ELSE 0 END),
+        SUM("Co" * CASE WHEN "GameResult" >= 5 AND "Friendly" = 0 THEN 1 ELSE 0 END),
+        SUM("Co" * CASE WHEN "EffectiveNumPlayers" = 2 AND "Friendly" = 0 THEN 1 ELSE 0 END),
+        SUM("Co" * CASE WHEN "EffectiveNumPlayers" = 3 AND "Friendly" = 0 THEN 1 ELSE 0 END),
+        SUM("Co" * CASE WHEN "EffectiveNumPlayers" = 4 AND "Friendly" = 0 THEN 1 ELSE 0 END),
+        SUM("Co" * CASE WHEN "GameResult" = 9 AND "Friendly" = 0 THEN 1 ELSE 0 END)
+    FROM
+        (
+            SELECT
+                COUNT(*) AS "Co",
+                "PlayerGameRcd"."User",
+                "PlayerGameRcd"."GameResult",
+                "Game"."EffectiveNumPlayers",
+                "Game"."Friendly"
+            FROM
+                "PlayerGameRcd"
+                LEFT JOIN "Game" ON "PlayerGameRcd"."Game" = "Game"."GameID"
+            WHERE
+                "PlayerGameRcd"."GameCounts" = 1 AND
+                "PlayerGameRcd"."GameResult" <= 9
+            GROUP BY
+                "PlayerGameRcd"."User",
+                "PlayerGameRcd"."GameResult",
+                "Game"."EffectiveNumPlayers",
+                "Game"."Friendly"
+        ) AS "QRX"
+    GROUP BY
+        "User"
+;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET varFinished = 1;
+
+OPEN Cur;
+REPEAT
+    FETCH
+        Cur
+    INTO
+        varUserID,
+        varGamesPlayed,
+        varGamesCompleted,
+        varGamesTwoPlayer,
+        varGamesThreePlayer,
+        varGamesFourPlayer,
+        varGamesPlayedC,
+        varGamesCompletedC,
+        varGamesTwoPlayerC,
+        varGamesThreePlayerC,
+        varGamesFourPlayerC,
+        varGamesWonC
+    ;
+    IF varFinished = 0 THEN
+        UPDATE
+            "User"
+        SET
+            "NumGamesPlayed" = varGamesPlayed,
+            "NumGamesCompleted" = varGamesCompleted,
+            "NumGamesTwoPlayer" = varGamesTwoPlayer,
+            "NumGamesThreePlayer" = varGamesThreePlayer,
+            "NumGamesFourPlayer" = varGamesFourPlayer,
+            "NumCompetitiveGamesPlayed" = varGamesPlayedC,
+            "NumCompetitiveGamesCompleted" = varGamesCompletedC,
+            "NumCompetitiveGamesTwoPlayer" = varGamesTwoPlayerC,
+            "NumCompetitiveGamesThreePlayer" = varGamesThreePlayerC,
+            "NumCompetitiveGamesFourPlayer" = varGamesFourPlayerC,
+            "NumCompetitiveGamesWon" = varGamesWonC
+        WHERE
+            "UserID" = varUserID
+        ;
+    END IF;
+UNTIL varFinished = 1 END REPEAT;
+CLOSE Cur;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "CalculateRanks_Rating" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DECLARE varFinished TINYINT DEFAULT 0;
+DECLARE varMustUpdatePrevious TINYINT;
+DECLARE varRecordedRank INT UNSIGNED;
+DECLARE varRealRank INT UNSIGNED DEFAULT 0;
+DECLARE varNewUserID INT UNSIGNED;
+DECLARE varOldUserID INT UNSIGNED;
+DECLARE varNewRating SMALLINT;
+DECLARE varOldRating SMALLINT;
+
+DECLARE Cur CURSOR FOR
+    SELECT "UserID", "Rating"
+    FROM "User"
+    ORDER BY "Rating" DESC;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET varFinished = 1;
+
+OPEN Cur;
+REPEAT
+    SET varOldUserID = varNewUserID;
+    FETCH Cur INTO varNewUserID, varNewRating;
+    IF varFinished = 0 THEN
+        SET varRealRank = varRealRank + 1;
+        IF varNewRating = varOldRating THEN
+            IF varMustUpdatePrevious = 1 THEN
+                SET varMustUpdatePrevious = 0;
+                UPDATE "User"
+                SET "RankRatingTie" = 1
+                WHERE "UserID" = varOldUserID;
+            END IF;
+            UPDATE "User"
+            SET "RankRating" = varRecordedRank, "RankRatingTie" = 1
+            WHERE "UserID" = varNewUserID;
+        ELSE
+            SET varOldRating = varNewRating;
+            SET varRecordedRank = varRealRank;
+            SET varMustUpdatePrevious = 1;
+            UPDATE "User"
+            SET "RankRating" = varRecordedRank, "RankRatingTie" = 0
+            WHERE "UserID" = varNewUserID;
+        END IF;
+    END IF;
+UNTIL varFinished = 1 END REPEAT;
+CLOSE Cur;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "CalculateRanks_GamesCompleted" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DECLARE varFinished TINYINT DEFAULT 0;
+DECLARE varMustUpdatePrevious TINYINT;
+DECLARE varRecordedRank INT UNSIGNED;
+DECLARE varRealRank INT UNSIGNED DEFAULT 0;
+DECLARE varNewUserID INT UNSIGNED;
+DECLARE varOldUserID INT UNSIGNED;
+DECLARE varNewNumber INT UNSIGNED;
+DECLARE varOldNumber INT UNSIGNED;
+
+DECLARE Cur CURSOR FOR
+    SELECT "UserID", "NumGamesCompleted"
+    FROM "User"
+    ORDER BY "NumGamesCompleted" DESC;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET varFinished = 1;
+
+OPEN Cur;
+REPEAT
+    SET varOldUserID = varNewUserID;
+    FETCH Cur INTO varNewUserID, varNewNumber;
+    IF varFinished = 0 THEN
+        SET varRealRank = varRealRank + 1;
+        IF varNewNumber = varOldNumber THEN
+            IF varMustUpdatePrevious = 1 THEN
+                SET varMustUpdatePrevious = 0;
+                UPDATE "User"
+                SET "RankGamesCompletedTie" = 1
+                WHERE "UserID" = varOldUserID;
+            END IF;
+            UPDATE "User"
+            SET "RankGamesCompleted" = varRecordedRank, "RankGamesCompletedTie" = 1
+            WHERE "UserID" = varNewUserID;
+        ELSE
+            SET varOldNumber = varNewNumber;
+            SET varRecordedRank = varRealRank;
+            SET varMustUpdatePrevious = 1;
+            UPDATE "User"
+            SET "RankGamesCompleted" = varRecordedRank, "RankGamesCompletedTie" = 0
+            WHERE "UserID" = varNewUserID;
+        END IF;
+    END IF;
+UNTIL varFinished = 1 END REPEAT;
+CLOSE Cur;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Maintenance_TimeLimitGames" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+SELECT
+    "Game"
+FROM
+    "GameInProgress"
+WHERE
+    TIMESTAMPADD(MINUTE, "GIPTimeLimitB", "GIPLastMove") < UTC_TIMESTAMP() OR
+    ( "GameRecruitingReplacement" = 1 AND
+      TIMESTAMPADD(MINUTE, "GIPTimeLimitA", "GIPLastMove") < UTC_TIMESTAMP()
+      )
+;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "Maintenance_RefreshMetadata" ()
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DECLARE varFinished TINYINT DEFAULT 0;
+DECLARE varNumGamesTotal INT UNSIGNED DEFAULT 0;
+DECLARE varNumGamesCompetitive INT UNSIGNED DEFAULT 0;
+DECLARE varNumGames4Player INT UNSIGNED DEFAULT 0;
+DECLARE varNumGames3Player INT UNSIGNED DEFAULT 0;
+DECLARE varNumGames2Player INT UNSIGNED DEFAULT 0;
+DECLARE varRowNumGames INT UNSIGNED;
+DECLARE varRowNumPlayers TINYINT UNSIGNED;
+DECLARE varRowFriendly TINYINT;
+
+DECLARE Cur CURSOR FOR
+    SELECT
+        COUNT(*),
+        "EffectiveNumPlayers",
+        "Friendly"
+    FROM
+        "Game"
+    WHERE
+        "GameStatus" NOT IN ('Cancelled', 'Recruiting')
+    GROUP BY
+        "EffectiveNumPlayers",
+        "Friendly"
+;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET varFinished = 1;
+
+OPEN Cur;
+REPEAT
+    FETCH Cur INTO varRowNumGames, varRowNumPlayers, varRowFriendly;
+    IF varFinished = 0 THEN
+        SET varNumGamesTotal = varNumGamesTotal + varRowNumGames;
+        IF varRowNumPlayers = 4 THEN
+            SET varNumGames4Player = varNumGames4Player + varRowNumGames;
+        ELSEIF varRowNumPlayers = 3 THEN
+            SET varNumGames3Player = varNumGames3Player + varRowNumGames;
+        ELSE
+            SET varNumGames2Player = varNumGames2Player + varRowNumGames;
+        END IF;
+        IF varRowFriendly = 1 THEN
+            SET varNumGamesCompetitive = varNumGamesCompetitive + varRowNumGames;
+            UPDATE "Metadatum"
+            SET "MetadatumValue" = varRowNumGames
+            WHERE "MetadatumName" = CONCAT('Games-Competitive-Players', varRowNumPlayers);
+        END IF;
+    END IF;
+UNTIL varFinished = 1 END REPEAT;
+CLOSE Cur;
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = varNumGamesTotal
+WHERE "MetadatumName" = 'Games-Total';
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = varNumGamesCompetitive
+WHERE "MetadatumName" = 'Games-Competitive';
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = varNumGames4Player
+WHERE "MetadatumName" = 'Games-Players4';
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = varNumGames3Player
+WHERE "MetadatumName" = 'Games-Players3';
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = varNumGames2Player
+WHERE "MetadatumName" = 'Games-Players2';
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = (
+    SELECT COUNT(*)
+    FROM "Game"
+    WHERE "GameIsFinished" = 1
+)
+WHERE "MetadatumName" = 'Games-Finished';
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = (
+    SELECT COUNT(*)
+    FROM "GameInProgress"
+)
+WHERE "MetadatumName" = 'Games-InProgress';
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = (
+    SELECT COUNT(*)
+    FROM "User"
+    WHERE "UserValidated" = 1
+)
+WHERE "MetadatumName" = 'Users-Total';
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = (
+    SELECT
+        COUNT(*)
+    FROM
+        "User"
+    WHERE
+        "Banned" = 0 AND
+        "UserValidated" = 1 AND
+        "LastMove" > TIMESTAMPADD(DAY, -60, UTC_TIMESTAMP())
+)
+WHERE "MetadatumName" = 'Users-Active';
+
+UPDATE "Metadatum"
+SET "MetadatumValue" = (
+    SELECT COUNT(*)
+    FROM "Message"
+)
+WHERE "MetadatumName" = 'Messages';
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "RenumberToDoListItems" (IN invarIncrement TINYINT UNSIGNED)
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DECLARE varFinished TINYINT DEFAULT 0;
+DECLARE varItemID INT UNSIGNED;
+DECLARE varCurrentOrderingNumber INT UNSIGNED DEFAULT 0;
+
+DECLARE Cur CURSOR FOR
+    SELECT "ItemID"
+    FROM "ToDoListItem"
+    ORDER BY "OrderingNumber"
+;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET varFinished = 1;
+
+IF invarIncrement >= 5 AND invarIncrement <= 20 THEN
+    OPEN Cur;
+    REPEAT
+        FETCH Cur INTO varItemID;
+        SET varCurrentOrderingNumber =
+                LEAST(varCurrentOrderingNumber + invarIncrement, 65535);
+        IF varFinished = 0 THEN
+            UPDATE "ToDoListItem"
+            SET "OrderingNumber" = varCurrentOrderingNumber
+            WHERE "ItemID" = varItemID;
+            CALL "RenumberToDoListSubItems"(varItemID, invarIncrement);
+        END IF;
+    UNTIL varFinished = 1 END REPEAT;
+    CLOSE Cur;
+END IF;
+
+END>>>>>
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+CREATE PROCEDURE "RenumberToDoListSubItems" ( IN invarItemID INT UNSIGNED,
+                                              IN invarIncrement TINYINT UNSIGNED
+                                              )
+LANGUAGE SQL
+NOT DETERMINISTIC
+MODIFIES SQL DATA
+SQL SECURITY DEFINER
+BEGIN
+
+DECLARE varFinished TINYINT DEFAULT 0;
+DECLARE varSubItemID INT UNSIGNED;
+DECLARE varCurrentOrderingNumber INT UNSIGNED DEFAULT 0;
+
+DECLARE Cur CURSOR FOR
+    SELECT "SubItemNumber"
+    FROM "ToDoListSubItem"
+    WHERE "Item" = invarItemID
+    ORDER BY "OrderingNumber"
+;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET varFinished = 1;
+
+IF invarIncrement >= 5 AND invarIncrement <= 20 THEN
+    OPEN Cur;
+    REPEAT
+        FETCH Cur INTO varSubItemID;
+        SET varCurrentOrderingNumber =
+                LEAST(varCurrentOrderingNumber + invarIncrement, 65535);
+        IF varFinished = 0 THEN
+            UPDATE
+                "ToDoListSubItem"
+            SET
+                "OrderingNumber" = varCurrentOrderingNumber
+            WHERE
+                "Item" = invarItemID AND
+                "SubItemNumber" = varSubItemID
+            ;
+        END IF;
+    UNTIL varFinished = 1 END REPEAT;
+    CLOSE Cur;
+END IF;
+
+END>>>>>
