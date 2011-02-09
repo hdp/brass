@@ -1,5 +1,9 @@
 <?php
 
+// I had a go at improving how this works a while ago, but I pretty much
+// screwed up the implementation of it. This script needs refactoring so that
+// it does things in less hackish ways.
+
 define( 'MAX_CODE_LINE_LENGTH'   , 110 );
 define( 'MAX_GAME_STATUS_CHECKS' ,  75 );
 
